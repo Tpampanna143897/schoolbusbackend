@@ -1,0 +1,710 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "School Bus Tracking API",
+        "description": "Admin, Driver, Parent APIs for School Bus Tracking",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:5000"
+        }
+    ],
+    "components": {
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        },
+        "schemas": {
+            "Login": {
+                "type": "object",
+                "required": [
+                    "email",
+                    "password"
+                ],
+                "properties": {
+                    "email": {
+                        "type": "string",
+                        "example": "admin@school.com"
+                    },
+                    "password": {
+                        "type": "string",
+                        "example": "admin123"
+                    }
+                }
+            },
+            "UserCreate": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "email",
+                    "password",
+                    "role"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string"
+                    },
+                    "password": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string",
+                        "enum": [
+                            "DRIVER",
+                            "PARENT"
+                        ]
+                    }
+                }
+            },
+            "Route": {
+                "type": "object",
+                "required": [
+                    "name"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "stops": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "Bus": {
+                "type": "object",
+                "required": [
+                    "busNumber",
+                    "route",
+                    "driver"
+                ],
+                "properties": {
+                    "busNumber": {
+                        "type": "string"
+                    },
+                    "route": {
+                        "type": "string",
+                        "description": "Route ObjectId"
+                    },
+                    "driver": {
+                        "type": "string",
+                        "description": "Driver User ObjectId"
+                    }
+                }
+            },
+            "Student": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "class",
+                    "parent",
+                    "route",
+                    "bus"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "class": {
+                        "type": "string"
+                    },
+                    "parent": {
+                        "type": "string",
+                        "description": "Parent User ObjectId"
+                    },
+                    "route": {
+                        "type": "string",
+                        "description": "Route ObjectId"
+                    },
+                    "bus": {
+                        "type": "string",
+                        "description": "Bus ObjectId"
+                    }
+                }
+            },
+            "Tracking": {
+                "type": "object",
+                "required": [
+                    "busId",
+                    "lat",
+                    "lng"
+                ],
+                "properties": {
+                    "busId": {
+                        "type": "string"
+                    },
+                    "lat": {
+                        "type": "number",
+                        "example": 12.9716
+                    },
+                    "lng": {
+                        "type": "number",
+                        "example": 77.5946
+                    }
+                }
+            },
+            "Attendance": {
+                "type": "object",
+                "required": [
+                    "studentId",
+                    "busId",
+                    "status"
+                ],
+                "properties": {
+                    "studentId": {
+                        "type": "string"
+                    },
+                    "busId": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PICKED",
+                            "DROPPED"
+                        ]
+                    }
+                }
+            }
+        }
+    },
+    "security": [
+        {
+            "BearerAuth": []
+        }
+    ],
+    "paths": {
+        "/api/bus/by-route/{routeId}": {
+            "get": {
+                "summary": "Get Bus by Route ID",
+                "tags": [
+                    "Bus"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "routeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bus Details"
+                    },
+                    "404": {
+                        "description": "No bus found"
+                    }
+                }
+            }
+        },
+        "/api/bus/driver/my-bus": {
+            "get": {
+                "summary": "Get Assigned Bus (Driver)",
+                "tags": [
+                    "Bus"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bus Details"
+                    },
+                    "404": {
+                        "description": "Bus not assigned"
+                    }
+                }
+            }
+        },
+        "/api/students": {
+            "post": {
+                "summary": "Add Student",
+                "tags": [
+                    "Student"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Student"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Student Created"
+                    }
+                }
+            }
+        },
+        "/api/students/bus/{busId}": {
+            "get": {
+                "summary": "Get Students by Bus",
+                "tags": [
+                    "Student"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "busId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of Students"
+                    }
+                }
+            }
+        },
+        "/api/students/parent/{parentId}": {
+            "get": {
+                "summary": "Get Student by Parent",
+                "tags": [
+                    "Student"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "parentId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Student Details"
+                    }
+                }
+            }
+        },
+        "/api/auth/login": {
+            "post": {
+                "summary": "Login (Admin / Driver / Parent)",
+                "tags": [
+                    "Auth"
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Login"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "JWT Token Returned"
+                    }
+                }
+            }
+        },
+        "/api/admin/users": {
+            "post": {
+                "summary": "Create Driver or Parent",
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserCreate"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User Created"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Get Users by Role",
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "role",
+                        "in": "query",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "DRIVER",
+                                "PARENT"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Users List"
+                    }
+                }
+            }
+        },
+        "/api/admin/routes": {
+            "post": {
+                "summary": "Create Route",
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Route"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Route Created"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Get All Routes",
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Routes List"
+                    }
+                }
+            }
+        },
+        "/api/admin/buses": {
+            "post": {
+                "summary": "Create Bus",
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Bus"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Bus Created"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Get All Buses",
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Bus List"
+                    }
+                }
+            }
+        },
+        "/api/admin/students": {
+            "post": {
+                "summary": "Create Student",
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Student"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Student Created"
+                    }
+                }
+            },
+            "get": {
+                "summary": "Get All Students",
+                "tags": [
+                    "Admin"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Students List"
+                    }
+                }
+            }
+        },
+        "/api/driver/bus": {
+            "get": {
+                "summary": "Get Assigned Bus (Driver)",
+                "tags": [
+                    "Driver"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Assigned Bus"
+                    }
+                }
+            }
+        },
+        "/api/driver/start-trip": {
+            "post": {
+                "summary": "Start Bus Trip (Driver)",
+                "tags": [
+                    "Driver"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Trip Started"
+                    }
+                }
+            }
+        },
+        "/api/tracking/update": {
+            "post": {
+                "summary": "Send Live GPS Location",
+                "tags": [
+                    "Tracking"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Tracking"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Location Broadcasted"
+                    }
+                }
+            }
+        },
+        "/api/attendance": {
+            "post": {
+                "summary": "Mark Attendance (Pickup / Drop)",
+                "tags": [
+                    "Attendance"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/Attendance"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Attendance Marked"
+                    }
+                }
+            }
+        },
+        "/api/parent/bus-location/{busId}": {
+            "get": {
+                "summary": "Get Current Bus Location (Parent / Student)",
+                "tags": [
+                    "Parent"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "busId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Bus ObjectId"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Current Bus Location",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "busId": {
+                                            "type": "string"
+                                        },
+                                        "lat": {
+                                            "type": "number"
+                                        },
+                                        "lng": {
+                                            "type": "number"
+                                        },
+                                        "time": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No tracking data"
+                    }
+                }
+            }
+        },
+        "/api/attendance/{studentId}": {
+            "get": {
+                "summary": "Get Student Attendance",
+                "tags": [
+                    "Attendance"
+                ],
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "studentId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attendance Records"
+                    }
+                }
+            }
+        }
+    }
+}
