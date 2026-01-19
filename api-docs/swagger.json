@@ -7,7 +7,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:5000"
+            "url": "https://schoolbusbackend-acx9.onrender.com"
         }
     ],
     "components": {
