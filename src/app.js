@@ -18,6 +18,11 @@ app.use(express.json());
 
 swaggerSetup(app);
 
+// Simple Health Check
+app.get("/", (req, res) => {
+    res.send("School Bus Backend is Running! 🚀");
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/driver", driverRoutes);
