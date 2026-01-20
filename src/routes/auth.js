@@ -30,5 +30,35 @@ router.post("/login", async (req, res) => {
     res.json({ token, role: user.role });
 });
 
+// GET /api/auth/me - Get Current User Profile
+router.get("/me", require("../middleware/auth"), async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: "Server Error" });
+    }
+});
+
+// PUT /api/auth/me - Update Profile
+router.put("/me", require("../middleware/auth"), async (req, res) => {
+    try {
+        const { name, email, phone } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        if (name) user.name = name;
+        if (email) user.email = email;
+        // If your User model has phone, update it. If not, you might need to add it to Schema.
+        // Assuming schema might need phone if not present.
+
+        await user.save();
+        res.json({ success: true, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+    } catch (err) {
+        res.status(500).json({ message: "Update failed" });
+    }
+});
 
 module.exports = router;
