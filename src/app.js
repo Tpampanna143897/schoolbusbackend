@@ -10,6 +10,7 @@ const attendanceRoutes = require("./routes/attendance");
 const parentRoutes = require("./routes/parent"); // ✅ REQUIRED
 const busRoutes = require("./routes/bus");
 const studentRoutes = require("./routes/student");
+const routeRoutes = require("./routes/route");
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/parent", parentRoutes); // ✅ REQUIRED
 app.use("/api/bus", busRoutes);
 app.use("/api/students", studentRoutes);
+app.use("/api/routes", routeRoutes);
 
 module.exports = app;

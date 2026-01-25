@@ -1,9 +1,13 @@
 const mongoose = require("mongoose");
 
 const busSchema = new mongoose.Schema({
-    busNumber: String,
-    route: { type: mongoose.Schema.Types.ObjectId, ref: "Route" },
-    driver: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+    busNumber: { type: String, required: true },
+    defaultRoute: { type: mongoose.Schema.Types.ObjectId, ref: "Route" },
+    status: { type: String, enum: ["ONLINE", "OFFLINE"], default: "OFFLINE" },
+    isActive: { type: Boolean, default: true },
+    lastLocationAt: { type: Date },
+    speed: { type: Number, default: 0 },
+    activeTrip: { type: mongoose.Schema.Types.ObjectId, ref: "Trip" }
 });
 
 module.exports = mongoose.model("Bus", busSchema);

@@ -1,0 +1,232 @@
+{
+    "info": {
+        "_postman_id": "school-bus-tracking-api",
+        "name": "School Bus Tracking v2",
+        "description": "Comprehensive Postman collection for the dynamic trip-based architecture.",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Auth",
+            "item": [
+                {
+                    "name": "Login",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"email\": \"admin@school.com\",\n    \"password\": \"admin123\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/auth/login"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Admin",
+            "item": [
+                {
+                    "name": "Create Route",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Green Valley Route\",\n    \"stops\": [\"Stop A\", \"Stop B\", \"Stop C\"]\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/routes"
+                        }
+                    }
+                },
+                {
+                    "name": "Create Bus",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"busNumber\": \"BUS-001\",\n    \"isActive\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/buses"
+                        }
+                    }
+                },
+                {
+                    "name": "Activate Bus",
+                    "request": {
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"isActive\": true\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/buses/:id/status"
+                        }
+                    }
+                },
+                {
+                    "name": "Create Student",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"John Doe\",\n    \"class\": \"5th Grade\",\n    \"parent\": \"PARENT_USER_ID\",\n    \"assignedRoute\": \"ROUTE_ID\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/admin/students"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Driver",
+            "item": [
+                {
+                    "name": "Fetch Buses",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/driver/buses"
+                        }
+                    }
+                },
+                {
+                    "name": "Start Trip",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"busId\": \"BUS_ID\",\n    \"routeId\": \"ROUTE_ID\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/driver/start-trip"
+                        }
+                    }
+                },
+                {
+                    "name": "Send GPS Update",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tripId\": \"TRIP_ID\",\n    \"lat\": 12.9716,\n    \"lng\": 77.5946,\n    \"speed\": 45\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/tracking/update"
+                        }
+                    }
+                },
+                {
+                    "name": "End Trip",
+                    "request": {
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"tripId\": \"TRIP_ID\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/driver/end-trip"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Parent",
+            "item": [
+                {
+                    "name": "Fetch Student",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/parent/my-children"
+                        }
+                    }
+                },
+                {
+                    "name": "Get trip Location",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/parent/trip-location/:tripId"
+                        }
+                    }
+                }
+            ]
+        }
+    ],
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{bearerToken}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "https://schoolbusbackend-acx9.onrender.com"
+        },
+        {
+            "key": "bearerToken",
+            "value": ""
+        }
+    ]
+}

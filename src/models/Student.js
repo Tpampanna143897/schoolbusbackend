@@ -9,15 +9,17 @@ const studentSchema = new mongoose.Schema(
             ref: "User",
             required: true
         },
-        route: {
+        assignedRoute: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Route",
-            required: true
+            ref: "Route"
         },
-        bus: {
+        assignedBus: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Bus",
-            required: true
+            ref: "Bus"
+        },
+        activeTripId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Trip"
         }
     },
     { timestamps: true }

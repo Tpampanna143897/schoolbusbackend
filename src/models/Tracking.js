@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 
 const trackingSchema = new mongoose.Schema(
     {
-        bus: {
+        tripId: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Bus",
+            ref: "Trip",
             required: true
         },
         lat: {
