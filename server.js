@@ -23,13 +23,39 @@ const Bus = require("./src/models/Bus");
 io.on("connection", (socket) => {
     console.log("Socket connected:", socket.id);
 
+    // Join room for specific bus (Parents and Admins)
+    socket.on("join-bus", (busId) => {
+        if (busId) {
+            socket.join(`bus-${busId}`);
+            console.log(`Socket ${socket.id} joined room bus-${busId}`);
+        }
+    });
+
     // Listen for live coordinates from driver side
     socket.on("driver-location-update", async (data) => {
         try {
-            const { tripId, lat, lng, speed, heading } = data;
-            if (!tripId || typeof lat !== 'number' || typeof lng !== 'number') return;
+            const { tripId, busId, lat, lng, speed, heading, driverId } = data;
 
-            // Analyse and save to backend data store (Requested logic)
+            // 4) Add GPS emit safeguards: Never emit undefined latitude/longitude
+            if (!tripId || !busId || typeof lat !== 'number' || typeof lng !== 'number') {
+                console.warn("[SOCKET] Invalid payload received:", data);
+                return;
+            }
+
+            // 2) Implement backend Socket.IO handling: Blocks invalid lat/lng payloads
+            if (lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+                console.warn("[SOCKET] Invalid coordinates:", lat, lng);
+                return;
+            }
+
+            // 3) Only the active driver can emit GPS updates
+            const bus = await Bus.findById(busId);
+            if (!bus || (bus.activeDriver && bus.activeDriver.toString() !== driverId)) {
+                console.warn(`[SOCKET] Unauthorized location update from driver ${driverId} for bus ${busId}`);
+                return;
+            }
+
+            // Save to backend data store
             const tracking = await Tracking.create({
                 tripId,
                 lat,
@@ -38,32 +64,44 @@ io.on("connection", (socket) => {
                 timestamp: new Date()
             });
 
-            // Re-fetch trip to get bus information for broadcasting
-            const trip = await Trip.findById(tripId).select("busId");
-            if (trip) {
-                // Update Bus status
-                await Bus.findByIdAndUpdate(trip.busId, {
-                    lastLocationAt: new Date(),
-                    status: "ONLINE",
-                    speed: speed || 0
-                });
+            // Update Bus status
+            await Bus.findByIdAndUpdate(busId, {
+                lastLocationAt: new Date(),
+                status: "ONLINE",
+                speed: speed || 0
+            });
 
-                // Broadcast to everyone (Parents & Admin)
-                io.emit("trip-location", {
-                    tripId,
-                    busId: trip.busId,
-                    lat,
-                    lng,
-                    speed: speed || 0,
-                    heading: heading || 0,
-                    time: new Date()
-                });
+            // 2) Broadcasts only to parents watching that bus (Room-based)
+            io.to(`bus-${busId}`).emit("trip-location", {
+                tripId,
+                busId,
+                lat,
+                lng,
+                speed: speed || 0,
+                heading: heading || 0,
+                time: new Date()
+            });
 
-                // console.log(`[SOCKET] Live update processed for Trip: ${tripId}`);
-            }
+            // Also broadcast to admin global room if needed (optional)
+            io.to("admin-room").emit("trip-location", {
+                tripId,
+                busId,
+                lat,
+                lng,
+                speed: speed || 0,
+                heading: heading || 0,
+                time: new Date()
+            });
+
         } catch (err) {
             console.error("Socket tracking error:", err.message);
         }
+    });
+
+    // Admin join global tracking
+    socket.on("join-admin", () => {
+        socket.join("admin-room");
+        console.log(`Admin ${socket.id} joined admin-room`);
     });
 
     socket.on("disconnect", () => {

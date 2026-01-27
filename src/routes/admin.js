@@ -198,6 +198,26 @@ router.get("/trip-history", auth, role("ADMIN"), async (req, res) => {
 });
 
 /**
+ * ADMIN: SWITCH ACTIVE DRIVER FOR A BUS
+ */
+router.put("/buses/:id/active-driver", auth, role("ADMIN"), async (req, res) => {
+    try {
+        const { activeDriverId } = req.body;
+
+        // Optionally verify if driverId is in assignedDrivers list
+        const bus = await Bus.findById(req.params.id);
+        if (!bus) return res.status(404).json({ message: "Bus not found" });
+
+        bus.activeDriver = activeDriverId || null;
+        await bus.save();
+
+        res.json({ message: "Active driver updated", bus });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to update active driver: " + err.message });
+    }
+});
+
+/**
  * GET SPECIFIC TRIP LOCATION
  */
 router.get("/trip-location/:tripId", auth, role("ADMIN"), async (req, res) => {
