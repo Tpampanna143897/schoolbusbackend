@@ -15,9 +15,16 @@ const Trip = require("../models/Trip");
  */
 router.post("/users", auth, role("ADMIN"), async (req, res) => {
     try {
-        const { name, email, password, role: userRole } = req.body;
+        const { name, email, password, role: userRole, assignedRoute, assignedBus } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ name, email, password: hashedPassword, role: userRole });
+        const user = await User.create({
+            name,
+            email,
+            password: hashedPassword,
+            role: userRole,
+            assignedRoute,
+            assignedBus
+        });
         res.json(user);
     } catch (err) {
         res.status(500).json({ message: "User creation failed" });
@@ -25,8 +32,24 @@ router.post("/users", auth, role("ADMIN"), async (req, res) => {
 });
 
 router.get("/users", auth, role("ADMIN"), async (req, res) => {
-    const users = await User.find({ role: req.query.role }).select("-password");
+    const users = await User.find({ role: req.query.role })
+        .populate("assignedRoute assignedBus")
+        .select("-password");
     res.json(users);
+});
+
+router.put("/users/:id", auth, role("ADMIN"), async (req, res) => {
+    try {
+        const { name, email, role: userRole, assignedRoute, assignedBus } = req.body;
+        const update = { name, email, role: userRole, assignedRoute, assignedBus };
+        const user = await User.findByIdAndUpdate(req.params.id, update, { new: true })
+            .populate("assignedRoute assignedBus")
+            .select("-password");
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json(user);
+    } catch (err) {
+        res.status(500).json({ message: "User update failed" });
+    }
 });
 
 /**

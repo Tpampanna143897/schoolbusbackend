@@ -7,9 +7,11 @@ const userSchema = new mongoose.Schema(
         password: { type: String, required: true },
         role: {
             type: String,
-            enum: ["ADMIN", "DRIVER", "PARENT"],
+            enum: ["ADMIN", "DRIVER", "PARENT", "STAFF"],
             required: true
-        }
+        },
+        assignedRoute: { type: mongoose.Schema.Types.ObjectId, ref: "Route" },
+        assignedBus: { type: mongoose.Schema.Types.ObjectId, ref: "Bus" }
     },
     { timestamps: true }
 );

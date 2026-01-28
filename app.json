@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "cc70540f-f7c8-489b-93cf-830de54b6a2d"
+      }
+    },
+    "android": {
+      "package": "com.hackerhihello.schoolbusbackend"
+    }
+  }
+}
