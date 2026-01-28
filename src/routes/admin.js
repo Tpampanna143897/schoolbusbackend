@@ -31,7 +31,7 @@ router.post("/users", auth, role("ADMIN"), async (req, res) => {
     }
 });
 
-router.get("/users", auth, role("ADMIN"), async (req, res) => {
+router.get("/users", auth, role("ADMIN", "STAFF"), async (req, res) => {
     const users = await User.find({ role: req.query.role })
         .populate("assignedRoute assignedBus")
         .select("-password");
@@ -60,7 +60,7 @@ router.post("/buses", auth, role("ADMIN"), async (req, res) => {
     res.json(bus);
 });
 
-router.get("/buses", auth, role("ADMIN"), async (req, res) => {
+router.get("/buses", auth, role("ADMIN", "STAFF"), async (req, res) => {
     const buses = await Bus.find().populate("activeTrip");
     res.json(buses);
 });
@@ -89,7 +89,7 @@ router.post("/students", auth, role("ADMIN"), async (req, res) => {
     }
 });
 
-router.get("/students", auth, role("ADMIN"), async (req, res) => {
+router.get("/students", auth, role("ADMIN", "STAFF"), async (req, res) => {
     const students = await Student.find().populate("parent assignedRoute assignedBus activeTripId");
     res.json(students);
 });
@@ -155,7 +155,7 @@ router.post("/routes", auth, role("ADMIN"), async (req, res) => {
     res.json(route);
 });
 
-router.get("/routes", auth, role("ADMIN"), async (req, res) => {
+router.get("/routes", auth, role("ADMIN", "STAFF"), async (req, res) => {
     const routes = await Route.find();
     res.json(routes);
 });
@@ -163,7 +163,7 @@ router.get("/routes", auth, role("ADMIN"), async (req, res) => {
 /**
  * LIVE TRACKING - ALL ACTIVE JOURNEYS
  */
-router.get("/live-trips", auth, role("ADMIN"), async (req, res) => {
+router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
     try {
         const trips = await Trip.find({ status: { $in: ["STARTED", "STOPPED"] } })
             .populate("driverId", "name email")
@@ -243,7 +243,7 @@ router.put("/buses/:id/active-driver", auth, role("ADMIN"), async (req, res) => 
 /**
  * GET SPECIFIC TRIP LOCATION
  */
-router.get("/trip-location/:tripId", auth, role("ADMIN"), async (req, res) => {
+router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, res) => {
     try {
         const location = await Tracking.findOne({ tripId: req.params.tripId }).sort({ timestamp: -1 });
         if (!location) return res.status(404).json({ message: "No location data" });
