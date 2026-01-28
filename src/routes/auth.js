@@ -8,7 +8,7 @@ router.post("/login", async (req, res) => {
 
     console.log("LOGIN BODY:", req.body);
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).populate("assignedRoute").populate("assignedBus");
     console.log("USER FROM DB:", user?.email);
 
     if (!user) {
@@ -27,13 +27,26 @@ router.post("/login", async (req, res) => {
         process.env.JWT_SECRET
     );
 
-    res.json({ token, role: user.role });
+    res.json({
+        token,
+        role: user.role,
+        user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            assignedRoute: user.assignedRoute,
+            assignedBus: user.assignedBus
+        }
+    });
 });
 
 // GET /api/auth/me - Get Current User Profile
 router.get("/me", require("../middleware/auth"), async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).select("-password");
+        const user = await User.findById(req.user.id)
+            .select("-password")
+            .populate("assignedRoute")
+            .populate("assignedBus");
         if (!user) return res.status(404).json({ message: "User not found" });
         res.json(user);
     } catch (err) {
