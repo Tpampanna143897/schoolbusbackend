@@ -5,22 +5,28 @@ const Tracking = require("../models/Tracking");
 const Student = require("../models/Student");
 
 /**
- * GET TRIP LOCATION
+ * GET TRIP LAST LOCATION (Fallback only)
  */
 router.get("/trip-location/:tripId", auth, async (req, res) => {
     try {
         const { tripId } = req.params;
-        const latestLocation = await Tracking.findOne({ tripId: tripId }).sort({ timestamp: -1 });
+
+        const latestLocation = await Tracking
+            .findOne({ tripId })
+            .sort({ timestamp: -1 })
+            .lean();
 
         if (!latestLocation) {
-            return res.status(404).json({ message: "No location data available for this trip" });
+            return res.status(404).json({ message: "No location data available" });
         }
 
         res.json(latestLocation);
     } catch (err) {
+        console.error("GET TRIP LOCATION ERR:", err.message);
         res.status(500).json({ message: "Internal server error" });
     }
 });
+
 
 /**
  * GET MY CHILDREN

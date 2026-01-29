@@ -8,7 +8,7 @@ const busSchema = new mongoose.Schema({
     lastLocationAt: { type: Date },
     speed: { type: Number, default: 0 },
     activeTrip: { type: mongoose.Schema.Types.ObjectId, ref: "Trip" },
-    activeDriver: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    activeDriverId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     assignedDrivers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }]
 });
 

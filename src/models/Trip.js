@@ -17,6 +17,11 @@ const tripSchema = new mongoose.Schema(
             ref: "Route",
             required: true
         },
+        type: {
+            type: String,
+            enum: ["MORNING", "EVENING"],
+            required: true
+        },
         status: {
             type: String,
             enum: ["STARTED", "STOPPED", "ENDED"],
