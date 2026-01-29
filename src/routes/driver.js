@@ -179,33 +179,42 @@ router.post("/end-trip", auth, role("DRIVER"), async (req, res) => {
     try {
         const driverId = req.user.id;
 
+        // 1. Find and end any active trip
         const trip = await Trip.findOneAndUpdate(
             { driverId, status: { $in: ["STARTED", "STOPPED"] } },
             { status: "ENDED", endedAt: new Date() },
             { new: true }
         );
 
-        if (trip) {
-            await Bus.findByIdAndUpdate(trip.busId, {
+        // 2. ALWAYS clear the lock on any bus this driver was using
+        // This handles cases where a driver selects a bus but never starts a trip
+        const updatedBus = await Bus.findOneAndUpdate(
+            { activeDriverId: driverId },
+            {
                 activeTrip: null,
                 activeDriverId: null,
                 status: "OFFLINE"
-            });
+            }
+        );
 
+        if (trip) {
+            // If there was a trip, also update student status
             await Student.updateMany(
                 { activeTripId: trip._id },
                 { activeTripId: null }
             );
         }
 
+        // 3. Reset driver status
         await Driver.findOneAndUpdate(
             { userId: driverId },
-            { isActive: false }
+            { isActive: false, busId: null }
         );
 
-        res.json({ success: true });
-    } catch {
-        res.status(500).json({ message: "Failed to end trip" });
+        res.json({ success: true, message: "Session ended and bus released" });
+    } catch (err) {
+        console.error("END TRIP ERROR:", err);
+        res.status(500).json({ message: "Failed to end trip or release bus" });
     }
 });
 
