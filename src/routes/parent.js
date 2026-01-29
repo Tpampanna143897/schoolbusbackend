@@ -17,7 +17,7 @@ router.get("/trip-location/:tripId", auth, async (req, res) => {
             .lean();
 
         if (!latestLocation) {
-            return res.status(404).json({ message: "No location data available" });
+            return res.json({ status: "offline", message: "No location data available" });
         }
 
         res.json(latestLocation);

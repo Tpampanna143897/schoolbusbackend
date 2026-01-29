@@ -54,6 +54,7 @@ router.post("/update", auth, async (req, res) => {
             lng,
             speed: speed || 0,
             heading: heading || 0,
+            mode: trip.type, // Include the trip type (MORNING/EVENING)
             time: new Date()
         });
 

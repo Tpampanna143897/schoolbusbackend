@@ -86,14 +86,14 @@ router.post("/select-bus", auth, role("DRIVER"), async (req, res) => {
  */
 router.post("/start-trip", auth, role("DRIVER"), async (req, res) => {
     try {
-        const { busId, routeId } = req.body;
+        const { busId, routeId, type } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(busId) || !mongoose.Types.ObjectId.isValid(routeId)) {
             return res.status(400).json({ message: "Invalid ID format" });
         }
 
         const bus = await Bus.findById(busId);
-        if (!bus || bus.activeDriverId.toString() !== req.user.id) {
+        if (!bus || !bus.activeDriverId || bus.activeDriverId.toString() !== req.user.id) {
             return res.status(403).json({ message: "Bus not locked by you" });
         }
 
@@ -110,6 +110,7 @@ router.post("/start-trip", auth, role("DRIVER"), async (req, res) => {
             driverId: req.user.id,
             busId,
             routeId,
+            type: type || "MORNING", // MORNING or EVENING
             status: "STARTED"
         });
 
