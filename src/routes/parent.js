@@ -20,7 +20,7 @@ router.get("/trip-location/:tripId", auth, async (req, res) => {
             return res.json({ status: "offline", message: "No location data available" });
         }
 
-        res.json(latestLocation);
+        res.json({ ...latestLocation, status: "online" });
     } catch (err) {
         console.error("GET TRIP LOCATION ERR:", err.message);
         res.status(500).json({ message: "Internal server error" });

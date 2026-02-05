@@ -231,7 +231,7 @@ router.put("/buses/:id/active-driver", auth, role("ADMIN"), async (req, res) => 
         const bus = await Bus.findById(req.params.id);
         if (!bus) return res.status(404).json({ message: "Bus not found" });
 
-        bus.activeDriver = activeDriverId || null;
+        bus.activeDriverId = activeDriverId || null;
         await bus.save();
 
         res.json({ message: "Active driver updated", bus });
@@ -241,8 +241,18 @@ router.put("/buses/:id/active-driver", auth, role("ADMIN"), async (req, res) => 
 });
 
 /**
- * GET SPECIFIC TRIP LOCATION
+ * GET SPECIFIC TRIP LOCATION (Last known point)
  */
+router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, res) => {
+    try {
+        const { tripId } = req.params;
+        const lastLoc = await Tracking.findOne({ tripId }).sort({ timestamp: -1 });
+        if (!lastLoc) return res.status(404).json({ message: "No location data found" });
+        res.json(lastLoc);
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
 /**
  * ADMIN: RESET BUS (Emergency clear)
  */
