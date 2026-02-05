@@ -50,7 +50,7 @@ io.on("connection", (socket) => {
 
             // 4) Update Socket.IO logic: Only accept GPS from the active driver
             const bus = await Bus.findById(busId);
-            if (!bus || !bus.activeDriver || bus.activeDriver.toString() !== driverId) {
+            if (!bus || !bus.activeDriverId || bus.activeDriverId.toString() !== driverId) {
                 console.warn(`[SOCKET] Blocked update from non-active driver ${driverId} for bus ${busId}`);
                 return;
             }
