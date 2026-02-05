@@ -225,4 +225,47 @@ router.post("/end-trip", auth, role("DRIVER"), async (req, res) => {
     }
 });
 
+/**
+ * RESET BUS (Force Release by authorized driver)
+ */
+router.post("/reset-bus", auth, role("DRIVER"), async (req, res) => {
+    try {
+        const { busId } = req.body;
+        const driverId = req.user.id;
+
+        const User = require("../models/User");
+        const currentUser = await User.findById(driverId);
+
+        // Security Check: Only allow if driver is assigned to this bus
+        const isAssigned = await Bus.findOne({
+            _id: busId,
+            $or: [
+                { assignedDrivers: driverId },
+                { _id: currentUser?.assignedBus }
+            ]
+        });
+
+        if (!isAssigned) {
+            return res.status(403).json({ message: "You are not authorized to reset this bus." });
+        }
+
+        const bus = await Bus.findByIdAndUpdate(busId, {
+            activeTrip: null,
+            activeDriverId: null,
+            status: "OFFLINE",
+            speed: 0
+        }, { new: true });
+
+        // End any associated trips
+        await Trip.updateMany(
+            { busId, status: { $in: ["STARTED", "STOPPED"] } },
+            { status: "ENDED", endedAt: new Date() }
+        );
+
+        res.json({ success: true, message: "Bus force-released successfully", bus });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to reset bus: " + err.message });
+    }
+});
+
 module.exports = router;
