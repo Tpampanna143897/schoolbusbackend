@@ -49,10 +49,16 @@ router.post("/select-bus", auth, role("DRIVER"), async (req, res) => {
         const { busId, shift } = req.body;
         const driverId = req.user.id;
 
+        const User = require("../models/User");
+        const currentUser = await User.findById(driverId);
+
         const bus = await Bus.findOneAndUpdate(
             {
                 _id: busId,
-                assignedDrivers: driverId,
+                $or: [
+                    { assignedDrivers: driverId },
+                    { _id: currentUser?.assignedBus }
+                ],
                 $or: [
                     { activeDriverId: null },
                     { activeDriverId: driverId }

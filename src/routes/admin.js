@@ -243,13 +243,29 @@ router.put("/buses/:id/active-driver", auth, role("ADMIN"), async (req, res) => 
 /**
  * GET SPECIFIC TRIP LOCATION
  */
-router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, res) => {
+/**
+ * ADMIN: RESET BUS (Emergency clear)
+ */
+router.post("/buses/:id/reset", auth, role("ADMIN"), async (req, res) => {
     try {
-        const location = await Tracking.findOne({ tripId: req.params.tripId }).sort({ timestamp: -1 });
-        if (!location) return res.status(404).json({ message: "No location data" });
-        res.json(location);
+        const bus = await Bus.findByIdAndUpdate(req.params.id, {
+            activeTrip: null,
+            activeDriverId: null,
+            status: "OFFLINE",
+            speed: 0
+        }, { new: true });
+
+        if (!bus) return res.status(404).json({ message: "Bus not found" });
+
+        // Also end any trip associated with this bus
+        await Trip.updateMany(
+            { busId: req.params.id, status: { $in: ["STARTED", "STOPPED"] } },
+            { status: "ENDED", endedAt: new Date() }
+        );
+
+        res.json({ message: "Bus reset successfully", bus });
     } catch (err) {
-        res.status(500).json({ message: "Failed to fetch location" });
+        res.status(500).json({ message: "Failed to reset bus: " + err.message });
     }
 });
 
