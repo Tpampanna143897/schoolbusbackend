@@ -5,6 +5,11 @@ const Tracking = require("../models/Tracking");
 const Student = require("../models/Student");
 
 /**
+ * BACKEND HEALTH & ROUTE TEST
+ */
+router.get("/ping", auth, (req, res) => res.json({ status: "PARENT API LIVE", time: new Date() }));
+
+/**
  * GET TRIP LAST LOCATION (Fallback only)
  */
 router.get("/trip-location/:tripId", auth, async (req, res) => {

@@ -43,6 +43,8 @@ io.on("connection", (socket) => {
         try {
             const { tripId, busId, driverId, lat, lng, speed, heading } = data;
 
+            console.log(`[SOCKET] Update attempt from Driver:${driverId} for Bus:${busId}`);
+
             // SAFEGUARDS: Block invalid data
             if (!tripId || !busId || !driverId || !Number.isFinite(lat) || !Number.isFinite(lng)) {
                 console.warn("[SOCKET] Rejected invalid location payload:", data);
@@ -51,13 +53,18 @@ io.on("connection", (socket) => {
 
             // AUTHORIZATION: Only accept updates from the active driver
             const bus = await Bus.findById(busId);
-            if (!bus || !bus.activeDriverId || bus.activeDriverId.toString() !== driverId) {
-                console.warn(`[SOCKET] Authorization failed for Driver:${driverId} on Bus:${busId}`);
+            if (!bus) {
+                console.warn(`[SOCKET] Bus not found: ${busId}`);
+                return;
+            }
+
+            if (!bus.activeDriverId || bus.activeDriverId.toString() !== driverId) {
+                console.warn(`[SOCKET] AUTH BLOCKED: Driver:${driverId} is NOT the active driver for Bus:${busId}. Active is: ${bus.activeDriverId}`);
                 return;
             }
 
             // A) SAVE TO DATABASE (Only place this happens now)
-            const trackingPoint = await Tracking.create({
+            await Tracking.create({
                 tripId,
                 lat,
                 lng,
@@ -85,6 +92,8 @@ io.on("connection", (socket) => {
 
             io.to(`bus-${busId}`).emit("trip-location", payload);
             io.to("admin-room").emit("trip-location", payload);
+
+            console.log(`[SOCKET] Success: Broadcasted location for Trip:${tripId}`);
 
         } catch (err) {
             console.error("[SOCKET] Tracking error:", err.message);

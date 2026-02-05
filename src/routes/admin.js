@@ -11,6 +11,25 @@ const Tracking = require("../models/Tracking");
 const Trip = require("../models/Trip");
 
 /**
+ * BACKEND HEALTH & ROUTE TEST
+ */
+router.get("/ping", auth, (req, res) => res.json({ status: "ADMIN API LIVE", time: new Date() }));
+
+/**
+ * GET SPECIFIC TRIP LOCATION (Last known point)
+ */
+router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, res) => {
+    try {
+        const { tripId } = req.params;
+        const lastLoc = await Tracking.findOne({ tripId }).sort({ timestamp: -1 }).lean();
+        if (!lastLoc) return res.status(404).json({ message: "No location data found" });
+        res.json({ ...lastLoc, status: "online" });
+    } catch (err) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
+/**
  * CREATE DRIVER / PARENT
  */
 router.post("/users", auth, role("ADMIN"), async (req, res) => {
@@ -240,19 +259,6 @@ router.put("/buses/:id/active-driver", auth, role("ADMIN"), async (req, res) => 
     }
 });
 
-/**
- * GET SPECIFIC TRIP LOCATION (Last known point)
- */
-router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, res) => {
-    try {
-        const { tripId } = req.params;
-        const lastLoc = await Tracking.findOne({ tripId }).sort({ timestamp: -1 });
-        if (!lastLoc) return res.status(404).json({ message: "No location data found" });
-        res.json(lastLoc);
-    } catch (err) {
-        res.status(500).json({ message: "Server error" });
-    }
-});
 /**
  * ADMIN: RESET BUS (Emergency clear)
  */
