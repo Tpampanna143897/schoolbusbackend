@@ -32,6 +32,38 @@ router.get("/trip-location/:tripId", auth, async (req, res) => {
     }
 });
 
+/**
+ * GET BUS LAST LOCATION (Fallback using busId)
+ */
+router.get("/bus-location/:busId", auth, async (req, res) => {
+    try {
+        const { busId } = req.params;
+        // Find the most recent active or stopped trip for this bus
+        const latestTrip = await Trip.findOne({
+            busId,
+            status: { $in: ["STARTED", "STOPPED"] }
+        }).sort({ startedAt: -1 });
+
+        if (!latestTrip) {
+            return res.json({ status: "offline", message: "Bus is currently offline (No active trip)" });
+        }
+
+        const latestLocation = await Tracking
+            .findOne({ tripId: latestTrip._id })
+            .sort({ timestamp: -1 })
+            .lean();
+
+        if (!latestLocation) {
+            return res.json({ status: "offline", message: "No tracking data available for active trip" });
+        }
+
+        res.json({ ...latestLocation, status: "online", tripId: latestTrip._id });
+    } catch (err) {
+        console.error("GET BUS LOCATION ERR:", err.message);
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 
 /**
  * GET MY CHILDREN
