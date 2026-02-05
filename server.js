@@ -62,12 +62,13 @@ io.on("connection", (socket) => {
             // AUTHORIZATION: Only accept updates from the active driver
             const bus = await Bus.findById(busId);
             if (!bus) {
-                console.warn(`[SOCKET] Bus not found: ${busId}`);
+                console.warn(`[SOCKET] Bus not found mapping failed: ${busId}`);
                 return;
             }
 
-            if (!bus.activeDriverId || bus.activeDriverId.toString() !== driverId) {
-                console.warn(`[SOCKET] AUTH BLOCKED: Driver:${driverId} is NOT the active driver for Bus:${busId}. Active is: ${bus.activeDriverId}`);
+            const activeDriverIdStr = bus.activeDriverId ? bus.activeDriverId.toString() : "null";
+            if (!bus.activeDriverId || activeDriverIdStr !== driverId) {
+                console.warn(`[SOCKET] AUTH BLOCKED: Driver:${driverId} (type:${typeof driverId}) is NOT the active driver for Bus:${busId}. Active is: ${activeDriverIdStr} (type:${typeof bus.activeDriverId})`);
                 return;
             }
 

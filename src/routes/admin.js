@@ -22,7 +22,10 @@ router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, r
     try {
         const { tripId } = req.params;
         const lastLoc = await Tracking.findOne({ tripId }).sort({ timestamp: -1 }).lean();
-        if (!lastLoc) return res.status(404).json({ message: "No location data found" });
+        if (!lastLoc) {
+            console.log(`[ADMIN] No location found for Trip:${tripId} - returning offline status`);
+            return res.json({ status: "offline", message: "No location data found" });
+        }
         res.json({ ...lastLoc, status: "online" });
     } catch (err) {
         res.status(500).json({ message: "Server error" });
