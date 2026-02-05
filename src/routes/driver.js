@@ -193,7 +193,8 @@ router.post("/end-trip", auth, role("DRIVER"), async (req, res) => {
             {
                 activeTrip: null,
                 activeDriverId: null,
-                status: "OFFLINE"
+                status: "OFFLINE",
+                speed: 0
             }
         );
 

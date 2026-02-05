@@ -16,7 +16,6 @@ const io = new Server(server, {
     transports: ["websocket", "polling"]
 });
 
-
 const Tracking = require("./src/models/Tracking");
 const Trip = require("./src/models/Trip");
 const Bus = require("./src/models/Bus");
