@@ -32,6 +32,14 @@ io.on("connection", (socket) => {
         }
     });
 
+    // 1b) JOIN TRIP ROOM (Direct trip follow)
+    socket.on("join-trip", (tripId) => {
+        if (tripId) {
+            socket.join(`trip-${tripId}`);
+            console.log(`[SOCKET] User ${socket.id} joined room: trip-${tripId}`);
+        }
+    });
+
     // 2) JOIN ADMIN ROOM (Fleet overview)
     socket.on("join-admin", () => {
         socket.join("admin-room");
@@ -91,6 +99,7 @@ io.on("connection", (socket) => {
             };
 
             io.to(`bus-${busId}`).emit("trip-location", payload);
+            io.to(`trip-${tripId}`).emit("trip-location", payload);
             io.to("admin-room").emit("trip-location", payload);
 
             console.log(`[SOCKET] Success: Broadcasted location for Trip:${tripId}`);
