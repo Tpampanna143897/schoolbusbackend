@@ -21,13 +21,37 @@ router.get("/ping", auth, (req, res) => res.json({ status: "ADMIN API LIVE", tim
 router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, res) => {
     try {
         const { tripId } = req.params;
+
+        // 1. Get last known location
         const lastLoc = await Tracking.findOne({ tripId }).sort({ timestamp: -1 }).lean();
+
+        // 2. Check trip status for context
+        const trip = await Trip.findById(tripId).select("status").lean();
+
         if (!lastLoc) {
-            console.log(`[ADMIN] No location found for Trip:${tripId} - returning offline status`);
-            return res.json({ status: "offline", message: "No location data found" });
+            const tripStatus = trip ? trip.status : "UNKNOWN";
+            console.log(`[ADMIN] No location found for Trip:${tripId} (Status: ${tripStatus})`);
+
+            if (tripStatus === "STARTED") {
+                return res.json({
+                    status: "waiting",
+                    message: "Trip has started but no location data received yet. Driver might be connecting."
+                });
+            }
+
+            return res.json({
+                status: "offline",
+                message: tripStatus === "ENDED" ? "Trip has ended" : "No location data found"
+            });
         }
-        res.json({ ...lastLoc, status: "online" });
+
+        res.json({
+            ...lastLoc,
+            status: trip && trip.status === "STARTED" ? "online" : "offline",
+            tripStatus: trip ? trip.status : "UNKNOWN"
+        });
     } catch (err) {
+        console.error("[ADMIN] GET TRIP LOCATION ERR:", err);
         res.status(500).json({ message: "Server error" });
     }
 });

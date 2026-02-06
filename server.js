@@ -51,29 +51,50 @@ io.on("connection", (socket) => {
         try {
             const { tripId, busId, driverId, lat, lng, speed, heading } = data;
 
-            console.log(`[SOCKET] Update attempt from Driver:${driverId} for Bus:${busId}`);
-
             // SAFEGUARDS: Block invalid data
             if (!tripId || !busId || !driverId || !Number.isFinite(lat) || !Number.isFinite(lng)) {
-                console.warn("[SOCKET] Rejected invalid location payload:", data);
+                console.warn("[SOCKET] Rejected invalid location payload - missing or invalid fields:", {
+                    tripId, busId, driverId, lat, lng
+                });
                 return;
             }
 
-            // AUTHORIZATION: Only accept updates from the active driver
+            console.log(`[SOCKET] Processing update from Driver:${driverId} for Trip:${tripId}`);
+
+            // 1. VALIDATE TRIP
+            const trip = await Trip.findById(tripId);
+            if (!trip) {
+                console.warn(`[SOCKET] REJECTED: Trip ${tripId} not found`);
+                return;
+            }
+
+            // 2. VALIDATE DRIVER (Must be the driver assigned to this trip)
+            if (trip.driverId.toString() !== driverId) {
+                console.warn(`[SOCKET] REJECTED: Driver ${driverId} is not the driver for Trip ${tripId} (Expected: ${trip.driverId})`);
+                return;
+            }
+
+            // 3. VALIDATE STATUS (Must be STARTED)
+            if (trip.status !== "STARTED") {
+                console.warn(`[SOCKET] REJECTED: Trip ${tripId} status is ${trip.status}, not STARTED`);
+                return;
+            }
+
+            // 4. VALIDATE ACTIVE DRIVER ON BUS (Optional but good for consistency)
             const bus = await Bus.findById(busId);
             if (!bus) {
-                console.warn(`[SOCKET] Bus not found mapping failed: ${busId}`);
+                console.warn(`[SOCKET] REJECTED: Bus ${busId} not found`);
                 return;
             }
 
             const activeDriverIdStr = bus.activeDriverId ? bus.activeDriverId.toString() : "null";
-            if (!bus.activeDriverId || activeDriverIdStr !== driverId) {
-                console.warn(`[SOCKET] AUTH BLOCKED: Driver:${driverId} (type:${typeof driverId}) is NOT the active driver for Bus:${busId}. Active is: ${activeDriverIdStr} (type:${typeof bus.activeDriverId})`);
+            if (activeDriverIdStr !== driverId) {
+                console.warn(`[SOCKET] REJECTED: Driver ${driverId} is not the active driver for Bus ${busId}. Active: ${activeDriverIdStr}`);
                 return;
             }
 
-            // A) SAVE TO DATABASE (Only place this happens now)
-            await Tracking.create({
+            // A) SAVE TO DATABASE
+            const newTracking = await Tracking.create({
                 tripId,
                 lat,
                 lng,
@@ -103,10 +124,10 @@ io.on("connection", (socket) => {
             io.to(`trip-${tripId}`).emit("trip-location", payload);
             io.to("admin-room").emit("trip-location", payload);
 
-            console.log(`[SOCKET] Success: Broadcasted location for Trip:${tripId}`);
+            console.log(`[SOCKET] SUCCESS: Saved and broadcasted location for Trip:${tripId}. PointID: ${newTracking._id}`);
 
         } catch (err) {
-            console.error("[SOCKET] Tracking error:", err.message);
+            console.error("[SOCKET] CRITICAL ERROR in location update:", err);
         }
     });
 
