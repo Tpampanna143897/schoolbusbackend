@@ -152,7 +152,7 @@ router.post("/resume-trip", auth, async (req, res) => {
 // START TRIP
 router.post("/start-trip", auth, async (req, res, next) => {
     try {
-        const { busId } = req.body;
+        const { busId, routeId } = req.body;
         const driverId = req.user.id;
 
         if (!mongoose.Types.ObjectId.isValid(busId)) {
@@ -162,9 +162,16 @@ router.post("/start-trip", auth, async (req, res, next) => {
         const bus = await Bus.findById(busId);
         if (!bus) return response(res, false, "Bus not found", {}, 404);
 
+        // Prioritize routeId from body, then fallback to bus's default route
+        const targetRouteId = routeId || bus.defaultRoute || bus.assignedRoute;
+
+        if (!targetRouteId || !mongoose.Types.ObjectId.isValid(targetRouteId)) {
+            return response(res, false, "No route assigned to this bus", {}, 400);
+        }
+
         // 1. Fetch Route and its Stops
-        const route = await Route.findById(bus.defaultRoute || bus.assignedRoute).populate("stops");
-        if (!route) return response(res, false, "No route assigned to this bus", {}, 400);
+        const route = await Route.findById(targetRouteId).populate("stops");
+        if (!route) return response(res, false, "Route not found", {}, 404);
 
         // 2. Create Trip Entry
         const trip = await Trip.create({
@@ -184,7 +191,7 @@ router.post("/start-trip", auth, async (req, res, next) => {
         // 3. Cache Stops in Redis for fast Geofencing
         await trackingService.cacheRouteStops(trip._id, route.stops);
 
-        logger.info(`[TRIP] Started: ${trip._id} for Bus: ${busId}`);
+        logger.info(`[TRIP] Started: ${trip._id} for Bus: ${busId} on Route: ${targetRouteId}`);
         return response(res, true, "Trip started successfully", { tripId: trip._id });
 
     } catch (err) {
