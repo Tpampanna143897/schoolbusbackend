@@ -15,12 +15,18 @@ const Trip = require("../models/Trip");
  */
 router.get("/ping", auth, (req, res) => res.json({ status: "ADMIN API LIVE", time: new Date() }));
 
+const mongoose = require("mongoose");
+
 /**
  * GET SPECIFIC TRIP LOCATION (Last known point)
  */
 router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, res) => {
     try {
         const { tripId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(tripId)) {
+            return res.status(400).json({ success: false, message: "Invalid Trip ID format" });
+        }
 
         // 1. Get last known location
         const lastLoc = await Tracking.findOne({ tripId }).sort({ timestamp: -1 }).lean();
@@ -32,27 +38,26 @@ router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, r
             const tripStatus = trip ? trip.status : "UNKNOWN";
             console.log(`[ADMIN] No location found for Trip:${tripId} (Status: ${tripStatus})`);
 
-            if (tripStatus === "STARTED") {
-                return res.json({
-                    status: "waiting",
-                    message: "Trip has started but no location data received yet. Driver might be connecting."
-                });
-            }
-
             return res.json({
-                status: "offline",
-                message: tripStatus === "ENDED" ? "Trip has ended" : "No location data found"
+                success: true,
+                data: {
+                    status: tripStatus === "STARTED" ? "waiting" : "offline",
+                    message: tripStatus === "STARTED" ? "Trip started but no location data received yet" : "No location data found"
+                }
             });
         }
 
         res.json({
-            ...lastLoc,
-            status: trip && trip.status === "STARTED" ? "online" : "offline",
-            tripStatus: trip ? trip.status : "UNKNOWN"
+            success: true,
+            data: {
+                ...lastLoc,
+                status: trip && trip.status === "STARTED" ? "online" : "offline",
+                tripStatus: trip ? trip.status : "UNKNOWN"
+            }
         });
     } catch (err) {
         console.error("[ADMIN] GET TRIP LOCATION ERR:", err);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
@@ -214,26 +219,35 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
         const trips = await Trip.find({ status: { $in: ["STARTED", "STOPPED"] } })
             .populate("driverId", "name email")
             .populate("busId")
-            .populate("routeId");
+            .populate("routeId")
+            .lean();
 
         // Attach latest location to each trip for immediate map visualization
         const tripsWithLocation = await Promise.all(trips.map(async (trip) => {
-            const lastLoc = await Tracking.findOne({ tripId: trip._id }).sort({ timestamp: -1 });
-            return {
-                ...trip.toObject(),
-                location: lastLoc ? {
-                    lat: lastLoc.lat,
-                    lng: lastLoc.lng,
-                    speed: lastLoc.speed,
-                    timestamp: lastLoc.timestamp
-                } : null
-            };
+            try {
+                const lastLoc = await Tracking.findOne({ tripId: trip._id }).sort({ timestamp: -1 }).lean();
+                return {
+                    ...trip,
+                    location: lastLoc ? {
+                        lat: lastLoc.lat || 0,
+                        lng: lastLoc.lng || 0,
+                        speed: lastLoc.speed || 0,
+                        timestamp: lastLoc.timestamp
+                    } : null
+                };
+            } catch (innerErr) {
+                console.warn(`[ADMIN] Error fetching location for Trip:${trip._id}`, innerErr.message);
+                return { ...trip, location: null };
+            }
         }));
 
-        res.json(tripsWithLocation);
+        res.json({
+            success: true,
+            data: tripsWithLocation || []
+        });
     } catch (err) {
         console.error("Live trips fetch error:", err);
-        res.status(500).json({ message: "Failed to fetch live trips" });
+        res.status(500).json({ success: false, message: "Failed to fetch live trips" });
     }
 });
 

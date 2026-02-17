@@ -9,12 +9,18 @@ const Student = require("../models/Student");
  */
 router.get("/ping", auth, (req, res) => res.json({ status: "PARENT API LIVE", time: new Date() }));
 
+const mongoose = require("mongoose");
+
 /**
  * GET TRIP LAST LOCATION (Fallback only)
  */
 router.get("/trip-location/:tripId", auth, async (req, res) => {
     try {
         const { tripId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(tripId)) {
+            return res.status(400).json({ success: false, message: "Invalid Trip ID format" });
+        }
 
         const latestLocation = await Tracking
             .findOne({ tripId })
@@ -25,25 +31,25 @@ router.get("/trip-location/:tripId", auth, async (req, res) => {
 
         if (!latestLocation) {
             const tripStatus = trip ? trip.status : "UNKNOWN";
-            if (tripStatus === "STARTED") {
-                return res.json({
-                    status: "waiting",
-                    message: "Trip started but no location data yet"
-                });
-            }
             return res.json({
-                status: "offline",
-                message: "No location data available"
+                success: true,
+                data: {
+                    status: tripStatus === "STARTED" ? "waiting" : "offline",
+                    message: tripStatus === "STARTED" ? "Trip started but no location data yet" : "No location data available"
+                }
             });
         }
 
         res.json({
-            ...latestLocation,
-            status: trip && trip.status === "STARTED" ? "online" : "offline"
+            success: true,
+            data: {
+                ...latestLocation,
+                status: trip && trip.status === "STARTED" ? "online" : "offline"
+            }
         });
     } catch (err) {
         console.error("GET TRIP LOCATION ERR:", err.message);
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 

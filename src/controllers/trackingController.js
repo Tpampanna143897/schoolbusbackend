@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Trip = require("../models/Trip");
 const LiveLocation = require("../models/LiveLocation");
 const Tracking = require("../models/Tracking");
@@ -11,23 +12,42 @@ exports.getLiveLocation = async (req, res) => {
     try {
         const { tripId } = req.params;
 
-        // 1. Redis Cache Check
-        const redisKey = `trip:${tripId}:live`;
-        const cachedData = await redis.get(redisKey);
-
-        if (cachedData) {
-            const data = JSON.parse(cachedData);
-            return res.status(200).json({
-                success: true,
-                data: {
-                    ...data,
-                    source: "cache",
-                    status: "online"
-                }
+        // 1. Validate tripId format to prevent CastError (500)
+        if (!mongoose.Types.ObjectId.isValid(tripId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid Trip ID format"
             });
         }
 
-        // 2. Operational DB Check
+        // 2. Redis Cache Check with safe error handling
+        let cachedData = null;
+        try {
+            const redisKey = `trip:${tripId}:live`;
+            cachedData = await redis.get(redisKey);
+        } catch (redisErr) {
+            logger.error(`[TRACKING CONTROLLER] Redis Error: ${redisErr.message}`);
+            // Fallback to DB if Redis fails
+        }
+
+        if (cachedData) {
+            try {
+                const data = JSON.parse(cachedData);
+                return res.status(200).json({
+                    success: true,
+                    data: {
+                        ...data,
+                        source: "cache",
+                        status: "online"
+                    }
+                });
+            } catch (jsonErr) {
+                logger.error(`[TRACKING CONTROLLER] JSON Parse Error: ${jsonErr.message}`);
+                // Fallback to DB if JSON is malformed
+            }
+        }
+
+        // 3. Operational DB Check
         const liveLoc = await LiveLocation.findOne({ tripId }).lean();
         if (liveLoc) {
             return res.status(200).json({
@@ -35,10 +55,10 @@ exports.getLiveLocation = async (req, res) => {
                 data: {
                     tripId: liveLoc.tripId,
                     busId: liveLoc.busId,
-                    lat: liveLoc.coordinates.lat,
-                    lng: liveLoc.coordinates.lng,
-                    speed: liveLoc.speed,
-                    heading: liveLoc.heading,
+                    lat: liveLoc.coordinates?.lat || 0,
+                    lng: liveLoc.coordinates?.lng || 0,
+                    speed: liveLoc.speed || 0,
+                    heading: liveLoc.heading || 0,
                     timestamp: liveLoc.lastUpdate,
                     status: liveLoc.status === "ONLINE" ? "online" : "offline",
                     source: "live_db"
@@ -46,21 +66,23 @@ exports.getLiveLocation = async (req, res) => {
             });
         }
 
-        // 3. Historical Fallback
-        const lastHist = await Tracking.findOne({ tripId }).sort({ timestamp: -1 }).lean();
-        const trip = await Trip.findById(tripId).select("status").lean();
+        // 4. Historical Fallback
+        const [lastHist, trip] = await Promise.all([
+            Tracking.findOne({ tripId }).sort({ timestamp: -1 }).lean(),
+            Trip.findById(tripId).select("status").lean()
+        ]);
 
         if (!lastHist) {
             return res.status(200).json({
                 success: true,
                 data: {
                     status: trip?.status === "STARTED" ? "waiting" : "offline",
-                    message: trip?.status === "STARTED" ? "Trip active, waiting for GPS..." : "No location data"
+                    message: trip?.status === "STARTED" ? "Trip active, waiting for GPS..." : "No location data found"
                 }
             });
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             data: {
                 ...lastHist,
@@ -70,7 +92,10 @@ exports.getLiveLocation = async (req, res) => {
         });
 
     } catch (err) {
-        logger.error(`[TRACKING CONTROLLER] Error: ${err.message}`);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        logger.error(`[TRACKING CONTROLLER] Fatal Error: ${err.name} - ${err.message} \nStack: ${err.stack}`);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error while fetching tracking data"
+        });
     }
 };
