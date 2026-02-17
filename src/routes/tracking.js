@@ -9,4 +9,11 @@ const trackingController = require("../controllers/trackingController");
  */
 router.get("/live/:tripId", auth, trackingController.getLiveLocation);
 
+/**
+ * @route POST /api/tracking/update
+ * @desc Update live location via HTTP (Fallback for background tasks)
+ * @access Private
+ */
+router.post("/update", auth, trackingController.updateLocation);
+
 module.exports = router;

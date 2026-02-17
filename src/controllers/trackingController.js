@@ -99,3 +99,26 @@ exports.getLiveLocation = async (req, res) => {
         });
     }
 };
+
+/**
+ * Update live location via HTTP (Fallback for background tasks)
+ */
+const trackingService = require("../services/tracking/trackingService");
+
+exports.updateLocation = async (req, res) => {
+    try {
+        const data = req.body;
+        const io = req.app.get("socketio");
+
+        if (!data.tripId || !data.lat || !data.lng) {
+            return res.status(400).json({ success: false, message: "Missing required tracking data" });
+        }
+
+        await trackingService.processLocationUpdate(io, data);
+
+        return res.status(200).json({ success: true, message: "Location updated via HTTP" });
+    } catch (err) {
+        logger.error(`[TRACKING CONTROLLER] HTTP Update Error: ${err.message}`);
+        return res.status(500).json({ success: false, message: "Failed to update location via HTTP" });
+    }
+};

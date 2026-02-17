@@ -249,6 +249,23 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
 
         const tripsWithLocation = await Promise.all(trips.map(async (trip) => {
             try {
+                // 1. Try LiveLocation first (Real-time)
+                const liveLoc = await LiveLocation.findOne({ tripId: trip._id }).lean();
+
+                if (liveLoc && liveLoc.coordinates) {
+                    return {
+                        ...trip,
+                        location: {
+                            lat: liveLoc.coordinates.lat || 0,
+                            lng: liveLoc.coordinates.lng || 0,
+                            speed: liveLoc.speed || 0,
+                            heading: liveLoc.heading || 0,
+                            timestamp: liveLoc.lastUpdate
+                        }
+                    };
+                }
+
+                // 2. Fallback to historical Tracking (if live is offline)
                 const lastLoc = await Tracking.findOne({ tripId: trip._id }).sort({ timestamp: -1 }).lean();
                 return {
                     ...trip,
@@ -263,7 +280,6 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
                 return { ...trip, location: null };
             }
         }));
-
         return response(res, true, "Live trips fetched", tripsWithLocation || []);
     } catch (err) {
         return response(res, false, "Failed to fetch live trips", {}, 500);

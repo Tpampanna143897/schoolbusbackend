@@ -17,6 +17,9 @@ const io = new Server(server, {
     allowEIO3: true
 });
 
+// Attach socket instance to app for use in HTTP routes
+app.set("socketio", io);
+
 const Tracking = require("./src/models/Tracking");
 const Trip = require("./src/models/Trip");
 const Bus = require("./src/models/Bus");
