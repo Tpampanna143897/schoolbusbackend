@@ -2,6 +2,8 @@ const router = require("express").Router();
 const bcrypt = require("bcryptjs");
 const auth = require("../middleware/auth");
 const role = require("../middleware/role");
+const response = require("../utils/response");
+const logger = require("../utils/logger");
 
 const User = require("../models/User");
 const Route = require("../models/Route");
@@ -9,13 +11,12 @@ const Bus = require("../models/Bus");
 const Student = require("../models/Student");
 const Tracking = require("../models/Tracking");
 const Trip = require("../models/Trip");
+const mongoose = require("mongoose");
 
 /**
  * BACKEND HEALTH & ROUTE TEST
  */
-router.get("/ping", auth, (req, res) => res.json({ status: "ADMIN API LIVE", time: new Date() }));
-
-const mongoose = require("mongoose");
+router.get("/ping", auth, (req, res) => response(res, true, "ADMIN API LIVE", { time: new Date() }));
 
 /**
  * GET SPECIFIC TRIP LOCATION (Last known point)
@@ -25,7 +26,7 @@ router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, r
         const { tripId } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(tripId)) {
-            return res.status(400).json({ success: false, message: "Invalid Trip ID format" });
+            return response(res, false, "Invalid Trip ID format", {}, 400);
         }
 
         // 1. Get last known location
@@ -36,28 +37,20 @@ router.get("/trip-location/:tripId", auth, role("ADMIN", "STAFF"), async (req, r
 
         if (!lastLoc) {
             const tripStatus = trip ? trip.status : "UNKNOWN";
-            console.log(`[ADMIN] No location found for Trip:${tripId} (Status: ${tripStatus})`);
-
-            return res.json({
-                success: true,
-                data: {
-                    status: tripStatus === "STARTED" ? "waiting" : "offline",
-                    message: tripStatus === "STARTED" ? "Trip started but no location data received yet" : "No location data found"
-                }
+            return response(res, true, "No location found yet", {
+                status: tripStatus === "STARTED" ? "waiting" : "offline",
+                message: tripStatus === "STARTED" ? "Trip started but no location data received yet" : "No location data found"
             });
         }
 
-        res.json({
-            success: true,
-            data: {
-                ...lastLoc,
-                status: trip && trip.status === "STARTED" ? "online" : "offline",
-                tripStatus: trip ? trip.status : "UNKNOWN"
-            }
+        return response(res, true, "Trip location fetched", {
+            ...lastLoc,
+            status: trip && trip.status === "STARTED" ? "online" : "offline",
+            tripStatus: trip ? trip.status : "UNKNOWN"
         });
     } catch (err) {
-        console.error("[ADMIN] GET TRIP LOCATION ERR:", err);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        logger.error(`[ADMIN] GET TRIP LOCATION ERR: ${err.message}`);
+        return response(res, false, "Internal server error", {}, 500);
     }
 });
 
@@ -76,17 +69,22 @@ router.post("/users", auth, role("ADMIN"), async (req, res) => {
             assignedRoute,
             assignedBus
         });
-        res.json(user);
+        return response(res, true, "User created successfully", user, 201);
     } catch (err) {
-        res.status(500).json({ message: "User creation failed" });
+        return response(res, false, "User creation failed", {}, 500);
     }
 });
 
 router.get("/users", auth, role("ADMIN", "STAFF"), async (req, res) => {
-    const users = await User.find({ role: req.query.role })
-        .populate("assignedRoute assignedBus")
-        .select("-password");
-    res.json(users);
+    try {
+        const users = await User.find({ role: req.query.role })
+            .populate("assignedRoute assignedBus")
+            .select("-password")
+            .lean();
+        return response(res, true, "Users fetched successfully", users);
+    } catch (err) {
+        return response(res, false, "Failed to fetch users", {}, 500);
+    }
 });
 
 router.put("/users/:id", auth, role("ADMIN"), async (req, res) => {
@@ -95,11 +93,12 @@ router.put("/users/:id", auth, role("ADMIN"), async (req, res) => {
         const update = { name, email, role: userRole, assignedRoute, assignedBus };
         const user = await User.findByIdAndUpdate(req.params.id, update, { new: true })
             .populate("assignedRoute assignedBus")
-            .select("-password");
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json(user);
+            .select("-password")
+            .lean();
+        if (!user) return response(res, false, "User not found", {}, 404);
+        return response(res, true, "User updated successfully", user);
     } catch (err) {
-        res.status(500).json({ message: "User update failed" });
+        return response(res, false, "User update failed", {}, 500);
     }
 });
 
@@ -107,19 +106,32 @@ router.put("/users/:id", auth, role("ADMIN"), async (req, res) => {
  * BUS MANAGEMENT
  */
 router.post("/buses", auth, role("ADMIN"), async (req, res) => {
-    const bus = await Bus.create(req.body);
-    res.json(bus);
+    try {
+        const bus = await Bus.create(req.body);
+        return response(res, true, "Bus created successfully", bus, 201);
+    } catch (err) {
+        return response(res, false, "Failed to create bus", {}, 500);
+    }
 });
 
 router.get("/buses", auth, role("ADMIN", "STAFF"), async (req, res) => {
-    const buses = await Bus.find().populate("activeTrip");
-    res.json(buses);
+    try {
+        const buses = await Bus.find().populate("activeTrip").lean();
+        return response(res, true, "Buses fetched successfully", buses);
+    } catch (err) {
+        return response(res, false, "Failed to fetch buses", {}, 500);
+    }
 });
 
 router.put("/buses/:id/status", auth, role("ADMIN"), async (req, res) => {
-    const { isActive } = req.body;
-    const bus = await Bus.findByIdAndUpdate(req.params.id, { isActive }, { new: true });
-    res.json(bus);
+    try {
+        const { isActive } = req.body;
+        const bus = await Bus.findByIdAndUpdate(req.params.id, { isActive }, { new: true }).lean();
+        if (!bus) return response(res, false, "Bus not found", {}, 404);
+        return response(res, true, "Bus status updated", bus);
+    } catch (err) {
+        return response(res, false, "Failed to update bus status", {}, 500);
+    }
 });
 
 /**
@@ -131,32 +143,32 @@ router.post("/students", auth, role("ADMIN"), async (req, res) => {
         if (studentData.assignedRoute === "") studentData.assignedRoute = null;
         if (studentData.assignedBus === "") studentData.assignedBus = null;
 
-        console.log("ENROLL STUDENT REQUEST:", studentData);
         const student = await Student.create(studentData);
-        res.json(student);
+        return response(res, true, "Student enrolled successfully", student, 201);
     } catch (err) {
-        console.error("ENROLL ERR:", err);
-        res.status(500).json({ message: "Enrollment failed: " + err.message });
+        return response(res, false, "Enrollment failed: " + err.message, {}, 500);
     }
 });
 
 router.get("/students", auth, role("ADMIN", "STAFF"), async (req, res) => {
-    const students = await Student.find().populate("parent assignedRoute assignedBus activeTripId");
-    res.json(students);
+    try {
+        const students = await Student.find().populate("parent assignedRoute assignedBus activeTripId").lean();
+        return response(res, true, "Students fetched successfully", students);
+    } catch (err) {
+        return response(res, false, "Failed to fetch students", {}, 500);
+    }
 });
 
 router.put("/students/:id", auth, role("ADMIN"), async (req, res) => {
     try {
         const studentId = req.params.id;
-        const mongoose = require("mongoose");
         if (!mongoose.Types.ObjectId.isValid(studentId)) {
-            return res.status(400).json({ message: "Invalid Student ID format" });
+            return response(res, false, "Invalid Student ID format", {}, 400);
         }
 
         const updateData = { ...req.body };
         const cleanUpdate = {};
 
-        // Strict cleaner for ObjectId fields
         const toValidId = (val) => {
             if (val === "" || val === null || val === "null" || val === "undefined") return null;
             if (mongoose.Types.ObjectId.isValid(val)) return val;
@@ -165,7 +177,6 @@ router.put("/students/:id", auth, role("ADMIN"), async (req, res) => {
 
         if (updateData.name !== undefined) cleanUpdate.name = updateData.name;
         if (updateData.class !== undefined) cleanUpdate.class = updateData.class;
-
         if (updateData.assignedRoute !== undefined) cleanUpdate.assignedRoute = toValidId(updateData.assignedRoute);
         if (updateData.assignedBus !== undefined) cleanUpdate.assignedBus = toValidId(updateData.assignedBus);
         if (updateData.parent !== undefined) {
@@ -173,42 +184,56 @@ router.put("/students/:id", auth, role("ADMIN"), async (req, res) => {
             if (pId) cleanUpdate.parent = pId;
         }
 
-        console.log(`CLEAN UPDATE for ${studentId}:`, cleanUpdate);
-
         const student = await Student.findByIdAndUpdate(studentId, cleanUpdate, { new: true })
-            .populate("parent assignedRoute assignedBus");
+            .populate("parent assignedRoute assignedBus")
+            .lean();
 
-        if (!student) return res.status(404).json({ message: "Student not found" });
-        res.json(student);
+        if (!student) return response(res, false, "Student not found", {}, 404);
+        return response(res, true, "Student updated successfully", student);
     } catch (err) {
-        console.error("STUDENT UPDATE ERR:", err);
-        res.status(500).json({ message: "Update failed: " + err.message });
+        return response(res, false, "Update failed: " + err.message, {}, 500);
     }
 });
 
 router.put("/students/:id/route", auth, role("ADMIN"), async (req, res) => {
-    const { routeId } = req.body;
-    const student = await Student.findByIdAndUpdate(req.params.id, { assignedRoute: routeId }, { new: true });
-    res.json(student);
+    try {
+        const { routeId } = req.body;
+        const student = await Student.findByIdAndUpdate(req.params.id, { assignedRoute: routeId }, { new: true }).lean();
+        return response(res, true, "Student route updated", student);
+    } catch (err) {
+        return response(res, false, "Failed to update route", {}, 500);
+    }
 });
 
 router.put("/students/:id/bus", auth, role("ADMIN"), async (req, res) => {
-    const { busId } = req.body;
-    const student = await Student.findByIdAndUpdate(req.params.id, { assignedBus: busId }, { new: true });
-    res.json(student);
+    try {
+        const { busId } = req.body;
+        const student = await Student.findByIdAndUpdate(req.params.id, { assignedBus: busId }, { new: true }).lean();
+        return response(res, true, "Student bus updated", student);
+    } catch (err) {
+        return response(res, false, "Failed to update bus", {}, 500);
+    }
 });
 
 /**
  * ROUTE MANAGEMENT
  */
 router.post("/routes", auth, role("ADMIN"), async (req, res) => {
-    const route = await Route.create(req.body);
-    res.json(route);
+    try {
+        const route = await Route.create(req.body);
+        return response(res, true, "Route created successfully", route, 201);
+    } catch (err) {
+        return response(res, false, "Failed to create route", {}, 500);
+    }
 });
 
 router.get("/routes", auth, role("ADMIN", "STAFF"), async (req, res) => {
-    const routes = await Route.find();
-    res.json(routes);
+    try {
+        const routes = await Route.find().lean();
+        return response(res, true, "Routes fetched successfully", routes);
+    } catch (err) {
+        return response(res, false, "Failed to fetch routes", {}, 500);
+    }
 });
 
 /**
@@ -222,7 +247,6 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
             .populate("routeId")
             .lean();
 
-        // Attach latest location to each trip for immediate map visualization
         const tripsWithLocation = await Promise.all(trips.map(async (trip) => {
             try {
                 const lastLoc = await Tracking.findOne({ tripId: trip._id }).sort({ timestamp: -1 }).lean();
@@ -236,18 +260,13 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
                     } : null
                 };
             } catch (innerErr) {
-                console.warn(`[ADMIN] Error fetching location for Trip:${trip._id}`, innerErr.message);
                 return { ...trip, location: null };
             }
         }));
 
-        res.json({
-            success: true,
-            data: tripsWithLocation || []
-        });
+        return response(res, true, "Live trips fetched", tripsWithLocation || []);
     } catch (err) {
-        console.error("Live trips fetch error:", err);
-        res.status(500).json({ success: false, message: "Failed to fetch live trips" });
+        return response(res, false, "Failed to fetch live trips", {}, 500);
     }
 });
 
@@ -272,11 +291,12 @@ router.get("/trip-history", auth, role("ADMIN"), async (req, res) => {
             .populate("driverId", "name")
             .populate("busId", "busNumber")
             .populate("routeId", "name")
-            .sort({ endedAt: -1 });
+            .sort({ endedAt: -1 })
+            .lean();
 
-        res.json(history);
+        return response(res, true, "Trip history fetched", history || []);
     } catch (err) {
-        res.status(500).json({ message: "Failed to fetch history" });
+        return response(res, false, "Failed to fetch history", {}, 500);
     }
 });
 
@@ -286,17 +306,15 @@ router.get("/trip-history", auth, role("ADMIN"), async (req, res) => {
 router.put("/buses/:id/active-driver", auth, role("ADMIN"), async (req, res) => {
     try {
         const { activeDriverId } = req.body;
-
-        // Optionally verify if driverId is in assignedDrivers list
         const bus = await Bus.findById(req.params.id);
-        if (!bus) return res.status(404).json({ message: "Bus not found" });
+        if (!bus) return response(res, false, "Bus not found", {}, 404);
 
         bus.activeDriverId = activeDriverId || null;
         await bus.save();
 
-        res.json({ message: "Active driver updated", bus });
+        return response(res, true, "Active driver updated", bus);
     } catch (err) {
-        res.status(500).json({ message: "Failed to update active driver: " + err.message });
+        return response(res, false, "Failed to update active driver", {}, 500);
     }
 });
 
@@ -310,19 +328,18 @@ router.post("/buses/:id/reset", auth, role("ADMIN"), async (req, res) => {
             activeDriverId: null,
             status: "OFFLINE",
             speed: 0
-        }, { new: true });
+        }, { new: true }).lean();
 
-        if (!bus) return res.status(404).json({ message: "Bus not found" });
+        if (!bus) return response(res, false, "Bus not found", {}, 404);
 
-        // Also end any trip associated with this bus
         await Trip.updateMany(
             { busId: req.params.id, status: { $in: ["STARTED", "STOPPED"] } },
             { status: "ENDED", endedAt: new Date() }
         );
 
-        res.json({ message: "Bus reset successfully", bus });
+        return response(res, true, "Bus reset successfully", bus);
     } catch (err) {
-        res.status(500).json({ message: "Failed to reset bus: " + err.message });
+        return response(res, false, "Failed to reset bus", {}, 500);
     }
 });
 

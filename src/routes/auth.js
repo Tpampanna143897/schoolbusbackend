@@ -2,22 +2,23 @@ const router = require("express").Router();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
+const auth = require("../middleware/auth");
+const response = require("../utils/response");
+const logger = require("../utils/logger");
 
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log(`[AUTH] Login attempt: ${email}`);
+        logger.info(`[AUTH] Login attempt: ${email}`);
 
         const user = await User.findOne({ email }).populate("assignedRoute").populate("assignedBus");
         if (!user) {
-            console.warn(`[AUTH] User not found: ${email}`);
-            return res.status(400).json({ message: "User not found" });
+            return response(res, false, "User not found", {}, 400);
         }
 
         const match = await bcrypt.compare(password, user.password);
         if (!match) {
-            console.warn(`[AUTH] Invalid password for: ${email}`);
-            return res.status(400).json({ message: "Wrong password" });
+            return response(res, false, "Wrong password", {}, 400);
         }
 
         const token = jwt.sign(
@@ -25,9 +26,9 @@ router.post("/login", async (req, res) => {
             process.env.JWT_SECRET || 'fallback_secret'
         );
 
-        console.log(`[AUTH] Login successful: ${email} (${user.role})`);
+        logger.info(`[AUTH] Login successful: ${email} (${user.role})`);
 
-        res.json({
+        return response(res, true, "Login successful", {
             token,
             role: user.role,
             user: {
@@ -39,43 +40,49 @@ router.post("/login", async (req, res) => {
             }
         });
     } catch (err) {
-        console.error("[AUTH] Login Crash:", err);
-        res.status(500).json({ message: "Internal Server Error" });
+        logger.error(`[AUTH] Login Crash: ${err.message}`);
+        return response(res, false, "Internal Server Error", {}, 500);
     }
 });
 
 // GET /api/auth/me - Get Current User Profile
-router.get("/me", require("../middleware/auth"), async (req, res) => {
+router.get("/me", auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
             .select("-password")
             .populate("assignedRoute")
-            .populate("assignedBus");
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json(user);
+            .populate("assignedBus")
+            .lean();
+        if (!user) return response(res, false, "User not found", {}, 404);
+        return response(res, true, "Profile fetched", user);
     } catch (err) {
-        res.status(500).json({ message: "Server Error" });
+        return response(res, false, "Server Error", {}, 500);
     }
 });
 
 // PUT /api/auth/me - Update Profile
-router.put("/me", require("../middleware/auth"), async (req, res) => {
+router.put("/me", auth, async (req, res) => {
     try {
-        const { name, email, phone } = req.body;
+        const { name, email } = req.body;
         const user = await User.findById(req.user.id);
 
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return response(res, false, "User not found", {}, 404);
 
         if (name) user.name = name;
         if (email) user.email = email;
-        // If your User model has phone, update it. If not, you might need to add it to Schema.
-        // Assuming schema might need phone if not present.
 
         await user.save();
-        res.json({ success: true, user: { id: user._id, name: user.name, email: user.email, role: user.role } });
+        return response(res, true, "Profile updated", {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+        });
     } catch (err) {
-        res.status(500).json({ message: "Update failed" });
+        return response(res, false, "Update failed", {}, 500);
     }
 });
+
+module.exports = router;
 
 module.exports = router;
