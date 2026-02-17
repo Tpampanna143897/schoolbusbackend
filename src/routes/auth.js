@@ -6,6 +6,71 @@ const auth = require("../middleware/auth");
 const response = require("../utils/response");
 const logger = require("../utils/logger");
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Login and get JWT token
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email: { type: string, example: "admin@antigravity.io" }
+ *               password: { type: string, example: "password123" }
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token: { type: string }
+ *                     user: { $ref: '#/components/schemas/User' }
+ *       401:
+ *         description: Invalid credentials
+ */
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email, password, role]
+ *             properties:
+ *               name: { type: string }
+ *               email: { type: string }
+ *               password: { type: string }
+ *               role: { type: string, enum: [ADMIN, DRIVER, PARENT, STAFF] }
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         description: User already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -46,6 +111,25 @@ router.post("/login", async (req, res) => {
 });
 
 // GET /api/auth/me - Get Current User Profile
+/**
+ * @swagger
+ * /auth/me:
+ *   get:
+ *     summary: Get current authenticated user profile
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data: { $ref: '#/components/schemas/User' }
+ */
 router.get("/me", auth, async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
@@ -61,7 +145,27 @@ router.get("/me", auth, async (req, res) => {
 });
 
 // PUT /api/auth/me - Update Profile
-router.put("/me", auth, async (req, res) => {
+/**
+ * @swagger
+ * /auth/profile:
+ *   put:
+ *     summary: Update current user profile
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name: { type: string }
+ *               email: { type: string }
+ *     responses:
+ *       200:
+ *         description: Profile updated
+ */
+router.put("/profile", auth, async (req, res) => {
     try {
         const { name, email } = req.body;
         const user = await User.findById(req.user.id);

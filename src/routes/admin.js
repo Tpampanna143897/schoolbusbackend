@@ -75,6 +75,40 @@ router.post("/users", auth, role("ADMIN"), async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /admin/users:
+ *   get:
+ *     summary: Get list of users filtered by role
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [ADMIN, DRIVER, PARENT, STAFF]
+ *         description: Filter users by their role
+ *     responses:
+ *       200:
+ *         description: List of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/User'
+ *       500:
+ *         description: Failed to fetch users
+ */
 router.get("/users", auth, role("ADMIN", "STAFF"), async (req, res) => {
     try {
         const users = await User.find({ role: req.query.role })
@@ -114,6 +148,33 @@ router.post("/buses", auth, role("ADMIN"), async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /admin/buses:
+ *   get:
+ *     summary: Get all buses
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of buses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Bus'
+ *       500:
+ *         description: Failed to fetch buses
+ */
 router.get("/buses", auth, role("ADMIN", "STAFF"), async (req, res) => {
     try {
         const buses = await Bus.find().populate("activeTrip").lean();
@@ -150,6 +211,33 @@ router.post("/students", auth, role("ADMIN"), async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /admin/students:
+ *   get:
+ *     summary: Get all students
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of students
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Student'
+ *       500:
+ *         description: Failed to fetch students
+ */
 router.get("/students", auth, role("ADMIN", "STAFF"), async (req, res) => {
     try {
         const students = await Student.find().populate("parent assignedRoute assignedBus activeTripId").lean();
@@ -238,6 +326,18 @@ router.get("/routes", auth, role("ADMIN", "STAFF"), async (req, res) => {
 
 /**
  * LIVE TRACKING - ALL ACTIVE JOURNEYS
+ */
+/**
+ * @swagger
+ * /admin/live-trips:
+ *   get:
+ *     summary: Get all active journeys for the live fleet map
+ *     tags: [Fleet]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of live trips with coordinates
  */
 router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
     try {

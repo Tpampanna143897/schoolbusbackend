@@ -12,6 +12,25 @@ const logger = require("../utils/logger");
  * @route GET /api/driver/buses
  * @desc Get buses assigned to the current driver
  */
+/**
+ * @swagger
+ * /driver/buses:
+ *   get:
+ *     summary: Get buses available or assigned to current driver
+ *     tags: [Trips]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of buses
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success: { type: boolean }
+ *                 data: { type: array, items: { $ref: '#/components/schemas/Bus' } }
+ */
 router.get("/buses", auth, async (req, res) => {
     try {
         const driverId = req.user.id;
@@ -28,6 +47,18 @@ router.get("/buses", auth, async (req, res) => {
 /**
  * @route GET /api/driver/active-trip
  * @desc Check if driver has an ongoing trip
+ */
+/**
+ * @swagger
+ * /driver/active-trip:
+ *   get:
+ *     summary: Check if driver has an ongoing trip
+ *     tags: [Trips]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Active trip details
  */
 router.get("/active-trip", auth, async (req, res) => {
     try {
@@ -47,6 +78,29 @@ router.get("/active-trip", auth, async (req, res) => {
 /**
  * @route POST /api/driver/select-bus
  * @desc Lock a bus for a driver session
+ */
+/**
+ * @swagger
+ * /driver/select-bus:
+ *   post:
+ *     summary: Select and lock a bus for the current session
+ *     tags: [Trips]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [busId]
+ *             properties:
+ *               busId: { type: string }
+ *     responses:
+ *       200:
+ *         description: Bus locked
+ *       409:
+ *         description: Bus already active with another driver
  */
 router.post("/select-bus", auth, async (req, res) => {
     try {
@@ -150,6 +204,29 @@ router.post("/resume-trip", auth, async (req, res) => {
 });
 
 // START TRIP
+/**
+ * @swagger
+ * /driver/start-trip:
+ *   post:
+ *     summary: Initialize a new journey
+ *     tags: [Trips]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [busId, routeId, type]
+ *             properties:
+ *               busId: { type: string }
+ *               routeId: { type: string }
+ *               type: { type: string, enum: [MORNING, EVENING] }
+ *     responses:
+ *       200:
+ *         description: Trip started
+ */
 router.post("/start-trip", auth, async (req, res, next) => {
     try {
         const { busId, routeId, type } = req.body;
@@ -201,6 +278,27 @@ router.post("/start-trip", auth, async (req, res, next) => {
 });
 
 // END TRIP
+/**
+ * @swagger
+ * /driver/end-trip:
+ *   post:
+ *     summary: Complete and terminate a journey
+ *     tags: [Trips]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [tripId]
+ *             properties:
+ *               tripId: { type: string }
+ *     responses:
+ *       200:
+ *         description: Trip ended
+ */
 router.post("/end-trip", auth, async (req, res, next) => {
     try {
         const { tripId } = req.body;

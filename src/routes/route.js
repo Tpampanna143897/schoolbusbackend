@@ -3,6 +3,18 @@ const auth = require("../middleware/auth");
 const Route = require("../models/Route");
 const response = require("../utils/response");
 
+/**
+ * @swagger
+ * /routes:
+ *   get:
+ *     summary: Get all available bus routes
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of routes
+ */
 router.get("/", auth, async (req, res) => {
     try {
         const routes = await Route.find({}).lean();

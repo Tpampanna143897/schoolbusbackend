@@ -5,6 +5,23 @@ const auth = require("../middleware/auth");
 /**
  * DRIVER: get bus by selected route
  */
+/**
+ * @swagger
+ * /bus/by-route/{routeId}:
+ *   get:
+ *     summary: Get bus details by route ID
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: routeId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Bus data
+ */
 router.get("/by-route/:routeId", auth, async (req, res) => {
     try {
         const bus = await Bus.findOne({ routeId: req.params.routeId });

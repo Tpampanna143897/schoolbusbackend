@@ -6,7 +6,31 @@ const response = require("../utils/response");
 const moment = require("moment");
 
 // MARK ATTENDANCE (PICKED or DROPPED)
-router.post("/", auth, async (req, res) => {
+/**
+ * @swagger
+ * /attendance/log:
+ *   post:
+ *     summary: Log student attendance (entry/exit)
+ *     tags: [Attendance]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [studentId, tripId, busId, status]
+ *             properties:
+ *               studentId: { type: string }
+ *               tripId: { type: string }
+ *               busId: { type: string }
+ *               status: { type: string, enum: [BOARDED, DROPPED] }
+ *     responses:
+ *       200:
+ *         description: Attendance logged
+ */
+router.post("/log", auth, async (req, res) => {
     try {
         const { studentId, status, tripId, lat, lng } = req.body;
 

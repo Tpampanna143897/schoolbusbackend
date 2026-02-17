@@ -18,6 +18,24 @@ const LiveLocation = require("../models/LiveLocation");
 /**
  * GET TRIP LAST LOCATION
  */
+/**
+ * @swagger
+ * /parent/trip-location/{tripId}:
+ *   get:
+ *     summary: Get last known location for a specific student trip
+ *     tags: [Parent]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tripId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Trip location
+ */
 router.get("/trip-location/:tripId", auth, async (req, res) => {
     try {
         const { tripId } = req.params;
@@ -75,6 +93,24 @@ router.get("/trip-location/:tripId", auth, async (req, res) => {
 
 /**
  * GET BUS LAST LOCATION
+ */
+/**
+ * @swagger
+ * /parent/bus-location/{busId}:
+ *   get:
+ *     summary: Get last known location for a bus
+ *     tags: [Parent]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: busId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Bus location
  */
 router.get("/bus-location/:busId", auth, async (req, res) => {
     try {

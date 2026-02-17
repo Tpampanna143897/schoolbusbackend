@@ -7,6 +7,25 @@ const mongoose = require("mongoose");
 /**
  * Add student
  */
+/**
+ * @swagger
+ * /students:
+ *   post:
+ *     summary: Add a new student
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, rollNumber]
+ *     responses:
+ *       201:
+ *         description: Student created
+ */
 router.post("/", auth, async (req, res) => {
     try {
         const student = await Student.create(req.body);
@@ -19,6 +38,23 @@ router.post("/", auth, async (req, res) => {
 /**
  * @route GET /api/students/bus/:busId
  * @desc Get students assigned to a specific bus
+ */
+/**
+ * @swagger
+ * /students/bus/{busId}:
+ *   get:
+ *     summary: Get students assigned to a specific bus
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: busId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: List of students
  */
 router.get("/bus/:busId", auth, async (req, res) => {
     try {
