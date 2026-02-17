@@ -1,0 +1,120 @@
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:34.402Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:34.475Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:34.581Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:34.744Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:34.953Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:35.205Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:35.518Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:35.879Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:36.282Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:36.742Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:37.245Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:37.796Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:38.411Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:39.079Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:39.795Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:40.561Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:41.377Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:42.241Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:43.145Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:44.110Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:45.118Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:46.170Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:47.288Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:48.443Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:49.646Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:50.911Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:52.219Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:53.577Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:54.984Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:56.444Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:57.948Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:08:59.511Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:01.124Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:02.785Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:04.491Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:06.244Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:08.061Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:09.923Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:11.829Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:13.788Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:15.797Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:17.800Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:19.807Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:21.811Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:23.822Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:25.829Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:27.846Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:29.851Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:31.853Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:33.861Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:35.864Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:37.879Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:39.896Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:41.912Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:43.913Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:45.929Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:47.938Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:49.952Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:51.966Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:53.972Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:55.984Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:09:57.997Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:00.011Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:02.023Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:04.038Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:06.050Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:08.053Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:10.067Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:12.082Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:14.086Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:16.098Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:18.113Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:20.117Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:22.119Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:24.123Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:26.130Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:28.147Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:30.166Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:32.169Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:34.181Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:36.191Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:38.204Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:40.217Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:42.232Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:44.249Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:46.257Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:48.264Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:50.280Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:52.295Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:54.313Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:56.328Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:10:58.342Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:00.358Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:02.369Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:04.374Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:06.390Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:08.405Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:10.423Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:12.436Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:14.452Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:16.468Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:18.485Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:20.492Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:22.498Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:24.514Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:26.518Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:28.532Z"}
+{"level":"error","message":"Redis Connection Error: Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-16T07:11:30.548Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:20:36.832Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:20:37.093Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:20:37.497Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:20:38.099Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:25:37.080Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:25:37.399Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:25:37.804Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:25:38.408Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:40:27.879Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:40:28.157Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:40:28.567Z"}
+{"level":"error","message":"Redis Connection Error: connect ECONNREFUSED 127.0.0.1:6379","service":"antigravity-tracking-service","timestamp":"2026-02-17T03:40:29.180Z"}

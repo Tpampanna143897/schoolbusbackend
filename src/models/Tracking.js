@@ -27,4 +27,7 @@ const trackingSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
+trackingSchema.index({ tripId: 1, timestamp: -1 });
+trackingSchema.index({ timestamp: 1 });
+
 module.exports = mongoose.model("Tracking", trackingSchema);

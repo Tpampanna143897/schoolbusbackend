@@ -17,6 +17,10 @@ const studentSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: "Bus"
         },
+        assignedStop: {
+            type: mongoose.Schema.Types.ObjectId,
+            // Links to a specific stop in a Route's stops array
+        },
         activeTripId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Trip"
