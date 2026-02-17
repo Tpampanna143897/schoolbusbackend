@@ -152,7 +152,7 @@ router.post("/resume-trip", auth, async (req, res) => {
 // START TRIP
 router.post("/start-trip", auth, async (req, res, next) => {
     try {
-        const { busId, routeId } = req.body;
+        const { busId, routeId, type } = req.body;
         const driverId = req.user.id;
 
         if (!mongoose.Types.ObjectId.isValid(busId)) {
@@ -178,6 +178,7 @@ router.post("/start-trip", auth, async (req, res, next) => {
             busId,
             driverId,
             routeId: route._id,
+            type: type || "MORNING", // Include the required type field
             status: "STARTED",
             startTime: new Date()
         });
