@@ -11,17 +11,45 @@ router.get("/ping", auth, (req, res) => res.json({ status: "PARENT API LIVE", ti
 
 const mongoose = require("mongoose");
 
+const response = require("../utils/response");
+const { redis } = require("../config/redis");
+const LiveLocation = require("../models/LiveLocation");
+
 /**
- * GET TRIP LAST LOCATION (Fallback only)
+ * GET TRIP LAST LOCATION
  */
 router.get("/trip-location/:tripId", auth, async (req, res) => {
     try {
         const { tripId } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(tripId)) {
-            return res.status(400).json({ success: false, message: "Invalid Trip ID format" });
+            return response(res, false, "Invalid Trip ID format", {}, 400);
         }
 
+        // 1. Check Redis Cache
+        const cached = await redis.get(`trip:${tripId}:live`);
+        if (cached) {
+            const data = JSON.parse(cached);
+            return response(res, true, "Trip location fetched (cache)", {
+                ...data,
+                status: "online"
+            });
+        }
+
+        // 2. Check LiveLocation
+        const liveLoc = await LiveLocation.findOne({ tripId }).lean();
+        if (liveLoc) {
+            return response(res, true, "Trip location fetched (live)", {
+                lat: liveLoc.coordinates.lat,
+                lng: liveLoc.coordinates.lng,
+                speed: liveLoc.speed,
+                heading: liveLoc.heading,
+                timestamp: liveLoc.lastUpdate,
+                status: liveLoc.status === "ONLINE" ? "online" : "offline"
+            });
+        }
+
+        // 3. Historical Fallback
         const latestLocation = await Tracking
             .findOne({ tripId })
             .sort({ timestamp: -1 })
@@ -31,37 +59,29 @@ router.get("/trip-location/:tripId", auth, async (req, res) => {
 
         if (!latestLocation) {
             const tripStatus = trip ? trip.status : "UNKNOWN";
-            return res.json({
-                success: true,
-                data: {
-                    status: tripStatus === "STARTED" ? "waiting" : "offline",
-                    message: tripStatus === "STARTED" ? "Trip started but no location data yet" : "No location data available"
-                }
+            return response(res, true, tripStatus === "STARTED" ? "Waiting for GPS..." : "Bus offline", {
+                status: tripStatus === "STARTED" ? "waiting" : "offline"
             });
         }
 
-        res.json({
-            success: true,
-            data: {
-                ...latestLocation,
-                status: trip && trip.status === "STARTED" ? "online" : "offline"
-            }
+        return response(res, true, "Trip location fetched (history)", {
+            ...latestLocation,
+            status: trip && trip.status === "STARTED" ? "online" : "offline"
         });
     } catch (err) {
-        console.error("GET TRIP LOCATION ERR:", err.message);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        return response(res, false, "Internal Server Error", {}, 500);
     }
 });
 
 /**
- * GET BUS LAST LOCATION (Fallback using busId)
+ * GET BUS LAST LOCATION
  */
 router.get("/bus-location/:busId", auth, async (req, res) => {
     try {
         const { busId } = req.params;
 
         if (!mongoose.Types.ObjectId.isValid(busId)) {
-            return res.status(400).json({ success: false, message: "Invalid Bus ID format" });
+            return response(res, false, "Invalid Bus ID format", {}, 400);
         }
 
         // Find the most recent active trip for this bus
@@ -71,12 +91,19 @@ router.get("/bus-location/:busId", auth, async (req, res) => {
         }).sort({ startedAt: -1 }).lean();
 
         if (!latestTrip) {
-            return res.json({
-                success: true,
-                data: {
-                    status: "offline",
-                    message: "Bus is currently offline (No active trip)"
-                }
+            return response(res, true, "Bus is currently offline", { status: "offline" });
+        }
+
+        // Check LiveLocation first
+        const liveLoc = await LiveLocation.findOne({ tripId: latestTrip._id }).lean();
+        if (liveLoc) {
+            return response(res, true, "Bus location fetched (live)", {
+                lat: liveLoc.coordinates.lat,
+                lng: liveLoc.coordinates.lng,
+                speed: liveLoc.speed,
+                heading: liveLoc.heading,
+                tripId: latestTrip._id,
+                status: "online"
             });
         }
 
@@ -86,28 +113,19 @@ router.get("/bus-location/:busId", auth, async (req, res) => {
             .lean();
 
         if (!latestLocation) {
-            const tripStatus = latestTrip.status;
-            return res.json({
-                success: true,
-                data: {
-                    status: tripStatus === "STARTED" ? "waiting" : "offline",
-                    message: tripStatus === "STARTED" ? "Trip is active, waiting for location updates..." : "No tracking data available",
-                    tripId: latestTrip._id
-                }
+            return response(res, true, "Trip active, waiting for GPS", {
+                status: "waiting",
+                tripId: latestTrip._id
             });
         }
 
-        res.json({
-            success: true,
-            data: {
-                ...latestLocation,
-                status: latestTrip.status === "STARTED" ? "online" : "offline",
-                tripId: latestTrip._id
-            }
+        return response(res, true, "Bus location fetched (history)", {
+            ...latestLocation,
+            status: latestTrip.status === "STARTED" ? "online" : "offline",
+            tripId: latestTrip._id
         });
     } catch (err) {
-        console.error("GET BUS LOCATION ERR:", err.message);
-        res.status(500).json({ success: false, message: "Internal server error" });
+        return response(res, false, "Internal Server Error", {}, 500);
     }
 });
 

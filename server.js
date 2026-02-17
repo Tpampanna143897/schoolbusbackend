@@ -45,6 +45,11 @@ io.on("connection", (socket) => {
         }
     });
 
+    socket.on("join-admin", () => {
+        socket.join("admin-room");
+        logger.info(`[SOCKET] Admin connected to global room: ${socket.id}`);
+    });
+
     socket.on("driver-location-update", async (data) => {
         try {
             await trackingService.processLocationUpdate(io, data);

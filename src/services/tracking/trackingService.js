@@ -154,6 +154,7 @@ class TrackingService {
             // 7. Emit live location to global listeners
             io.to(`trip-${tripId}`).emit("busLocation", payload);
             io.to(`bus-${busId}`).emit("busLocation", payload);
+            io.to("admin-room").emit("busLocation", payload);
 
         } catch (err) {
             logger.error(`[TRACKING SERVICE] Process Error: ${err.message}`);

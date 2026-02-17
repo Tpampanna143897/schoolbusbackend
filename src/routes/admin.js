@@ -250,7 +250,12 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
         const tripsWithLocation = await Promise.all(trips.map(async (trip) => {
             try {
                 // 1. Try LiveLocation first (Real-time)
-                const liveLoc = await LiveLocation.findOne({ tripId: trip._id }).lean();
+                const liveLoc = await LiveLocation.findOne({
+                    $or: [
+                        { tripId: trip._id },
+                        { busId: trip.busId?._id || trip.busId }
+                    ]
+                }).lean();
 
                 if (liveLoc && liveLoc.coordinates) {
                     return {
@@ -260,7 +265,8 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
                             lng: liveLoc.coordinates.lng || 0,
                             speed: liveLoc.speed || 0,
                             heading: liveLoc.heading || 0,
-                            timestamp: liveLoc.lastUpdate
+                            timestamp: liveLoc.lastUpdate,
+                            status: liveLoc.status === "ONLINE" ? "online" : "offline"
                         }
                     };
                 }
@@ -273,7 +279,8 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
                         lat: lastLoc.lat || 0,
                         lng: lastLoc.lng || 0,
                         speed: lastLoc.speed || 0,
-                        timestamp: lastLoc.timestamp
+                        timestamp: lastLoc.timestamp,
+                        status: "offline"
                     } : null
                 };
             } catch (innerErr) {

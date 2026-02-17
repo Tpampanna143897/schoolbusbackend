@@ -48,7 +48,14 @@ exports.getLiveLocation = async (req, res) => {
         }
 
         // 3. Operational DB Check
-        const liveLoc = await LiveLocation.findOne({ tripId }).lean();
+        const id = tripId;
+        const liveLoc = await LiveLocation.findOne({
+            $or: [
+                { tripId: mongoose.Types.ObjectId.isValid(id) ? id : null },
+                { busId: mongoose.Types.ObjectId.isValid(id) ? id : null }
+            ]
+        }).lean();
+
         if (liveLoc) {
             return res.status(200).json({
                 success: true,
