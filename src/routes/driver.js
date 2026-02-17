@@ -210,9 +210,9 @@ router.post("/end-trip", auth, async (req, res, next) => {
         }
 
         const trip = await Trip.findByIdAndUpdate(tripId, {
-            status: "COMPLETED",
-            endTime: new Date()
-        });
+            status: "ENDED",
+            endedAt: new Date()
+        }, { new: true });
 
         if (!trip) return response(res, false, "Trip not found", {}, 404);
 
