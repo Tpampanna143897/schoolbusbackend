@@ -180,7 +180,7 @@ router.post("/start-trip", auth, async (req, res, next) => {
             routeId: route._id,
             type: type || "MORNING", // Include the required type field
             status: "STARTED",
-            startTime: new Date()
+            startedAt: new Date()
         });
 
         // Update Bus Status
