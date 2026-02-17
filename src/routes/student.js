@@ -1,6 +1,8 @@
 const router = require("express").Router();
 const Student = require("../models/Student");
 const auth = require("../middleware/auth");
+const response = require("../utils/response");
+const mongoose = require("mongoose");
 
 /**
  * Add student
@@ -8,14 +10,15 @@ const auth = require("../middleware/auth");
 router.post("/", auth, async (req, res) => {
     try {
         const student = await Student.create(req.body);
-        res.json(student);
+        return response(res, true, "Student added successfully", student, 201);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        return response(res, false, "Failed to add student", {}, 500);
     }
 });
 
 /**
- * Get students by bus (for driver) - updated to check preferred bus
+ * @route GET /api/students/bus/:busId
+ * @desc Get students assigned to a specific bus
  */
 router.get("/bus/:busId", auth, async (req, res) => {
     try {

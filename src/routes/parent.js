@@ -59,16 +59,24 @@ router.get("/trip-location/:tripId", auth, async (req, res) => {
 router.get("/bus-location/:busId", auth, async (req, res) => {
     try {
         const { busId } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(busId)) {
+            return res.status(400).json({ success: false, message: "Invalid Bus ID format" });
+        }
+
         // Find the most recent active trip for this bus
         const latestTrip = await Trip.findOne({
             busId,
             status: { $in: ["STARTED", "STOPPED"] }
-        }).sort({ startedAt: -1 });
+        }).sort({ startedAt: -1 }).lean();
 
         if (!latestTrip) {
             return res.json({
-                status: "offline",
-                message: "Bus is currently offline (No active trip)"
+                success: true,
+                data: {
+                    status: "offline",
+                    message: "Bus is currently offline (No active trip)"
+                }
             });
         }
 
@@ -78,28 +86,28 @@ router.get("/bus-location/:busId", auth, async (req, res) => {
             .lean();
 
         if (!latestLocation) {
-            if (latestTrip.status === "STARTED") {
-                return res.json({
-                    status: "waiting",
-                    message: "Trip is active, waiting for location updates...",
-                    tripId: latestTrip._id
-                });
-            }
+            const tripStatus = latestTrip.status;
             return res.json({
-                status: "offline",
-                message: "No tracking data available for active trip",
-                tripId: latestTrip._id
+                success: true,
+                data: {
+                    status: tripStatus === "STARTED" ? "waiting" : "offline",
+                    message: tripStatus === "STARTED" ? "Trip is active, waiting for location updates..." : "No tracking data available",
+                    tripId: latestTrip._id
+                }
             });
         }
 
         res.json({
-            ...latestLocation,
-            status: latestTrip.status === "STARTED" ? "online" : "offline",
-            tripId: latestTrip._id
+            success: true,
+            data: {
+                ...latestLocation,
+                status: latestTrip.status === "STARTED" ? "online" : "offline",
+                tripId: latestTrip._id
+            }
         });
     } catch (err) {
         console.error("GET BUS LOCATION ERR:", err.message);
-        res.status(500).json({ message: "Server error" });
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 
@@ -110,10 +118,16 @@ router.get("/bus-location/:busId", auth, async (req, res) => {
 router.get("/my-children", auth, async (req, res) => {
     try {
         const students = await Student.find({ parent: req.user.id })
-            .populate("assignedBus assignedRoute activeTripId");
-        res.json(students);
+            .populate("assignedBus assignedRoute activeTripId")
+            .lean();
+
+        res.json({
+            success: true,
+            data: students || []
+        });
     } catch (err) {
-        res.status(500).json({ message: "Internal server error" });
+        console.error("GET CHILDREN ERR:", err);
+        res.status(500).json({ success: false, message: "Internal server error" });
     }
 });
 

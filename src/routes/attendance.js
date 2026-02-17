@@ -2,7 +2,7 @@ const router = require("express").Router();
 const auth = require("../middleware/auth");
 const Attendance = require("../models/Attendance");
 const Trip = require("../models/Trip");
-
+const response = require("../utils/response");
 const moment = require("moment");
 
 // MARK ATTENDANCE (PICKED or DROPPED)
@@ -11,17 +11,17 @@ router.post("/", auth, async (req, res) => {
         const { studentId, status, tripId, lat, lng } = req.body;
 
         if (!studentId || !status) {
-            return res.status(400).json({ message: "Student and status are required" });
+            return response(res, false, "Student and status are required", {}, 400);
         }
 
         const date = moment().format("YYYY-MM-DD");
         const updateData = { status, tripId };
 
-        if (status === "PICKED") {
+        if (status === "PICKED" || status === "PICKED_UP") {
             updateData.pickupTime = new Date();
             updateData.pickupLat = lat;
             updateData.pickupLng = lng;
-        } else if (status === "DROPPED") {
+        } else if (status === "DROPPED" || status === "DROPPED_OFF") {
             updateData.dropTime = new Date();
             updateData.dropLat = lat;
             updateData.dropLng = lng;
@@ -31,12 +31,12 @@ router.post("/", auth, async (req, res) => {
             { studentId, date },
             { $set: updateData },
             { upsert: true, new: true }
-        );
+        ).lean();
 
-        res.json(attendance);
+        return response(res, true, "Attendance marked successfully", attendance);
     } catch (err) {
         console.error("Attendance Error:", err);
-        res.status(500).json({ message: "Attendance operation failed" });
+        return response(res, false, "Attendance operation failed", {}, 500);
     }
 });
 
@@ -44,12 +44,11 @@ router.post("/", auth, async (req, res) => {
 router.get("/history/:studentId", auth, async (req, res) => {
     try {
         const { studentId } = req.params;
-        const { month, year } = req.query; // Optional filters
+        const { month, year } = req.query;
 
         let query = { studentId };
 
         if (month && year) {
-            // Filter by month and year in YYYY-MM-DD format
             const monthStr = month.toString().padStart(2, '0');
             query.date = { $regex: `^${year}-${monthStr}-` };
         }
@@ -63,21 +62,25 @@ router.get("/history/:studentId", auth, async (req, res) => {
                     { path: 'routeId', select: 'name' }
                 ]
             })
-            .sort({ date: -1 });
+            .sort({ date: -1 })
+            .lean();
 
-        res.json(history);
+        return response(res, true, "Attendance history fetched", history || []);
     } catch (err) {
         console.error("History Fetch Error:", err);
-        res.status(500).json({ message: "Failed to fetch attendance history" });
+        return response(res, false, "Failed to fetch attendance history", {}, 500);
     }
 });
 
 router.get("/:studentId", auth, async (req, res) => {
     try {
-        const attendance = await Attendance.find({ studentId: req.params.studentId }).sort({ date: -1 });
-        res.json(attendance);
+        const attendance = await Attendance.find({ studentId: req.params.studentId })
+            .sort({ date: -1 })
+            .lean();
+        return response(res, true, "Attendance data fetched", attendance || []);
     } catch (err) {
-        res.status(500).json({ message: "Failed to fetch attendance" });
+        console.error("Attendance Fetch Error:", err);
+        return response(res, false, "Failed to fetch attendance", {}, 500);
     }
 });
 
