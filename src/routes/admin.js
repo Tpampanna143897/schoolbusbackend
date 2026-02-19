@@ -350,12 +350,17 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
         const tripsWithLocation = await Promise.all(trips.map(async (trip) => {
             try {
                 // 1. Try LiveLocation first (Real-time)
+                const busId = trip.busId?._id || trip.busId;
                 const liveLoc = await LiveLocation.findOne({
                     $or: [
                         { tripId: trip._id },
-                        { busId: trip.busId?._id || trip.busId }
+                        { busId: busId }
                     ]
                 }).lean();
+
+                if (liveLoc) {
+                    logger.debug(`[ADMIN] Found live location for trip ${trip._id}`);
+                }
 
                 if (liveLoc && liveLoc.coordinates) {
                     return {
@@ -373,15 +378,17 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
 
                 // 2. Fallback to historical Tracking (if live is offline)
                 const lastLoc = await Tracking.findOne({ tripId: trip._id }).sort({ timestamp: -1 }).lean();
+                if (!lastLoc) return { ...trip, location: null };
+
                 return {
                     ...trip,
-                    location: lastLoc ? {
+                    location: {
                         lat: lastLoc.lat || 0,
                         lng: lastLoc.lng || 0,
                         speed: lastLoc.speed || 0,
                         timestamp: lastLoc.timestamp,
                         status: "offline"
-                    } : null
+                    }
                 };
             } catch (innerErr) {
                 return { ...trip, location: null };

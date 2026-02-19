@@ -203,6 +203,46 @@ class TrackingService {
         }
     }
 
+    async initializeTripLocation(tripId, busId, driverId, lat, lng) {
+        if (!lat || !lng) return;
+        const now = new Date();
+        try {
+            // 1. Redis Initialization
+            const redisKey = `trip:${tripId}:live`;
+            const payload = { tripId, busId, driverId, lat, lng, speed: 0, heading: 0, timestamp: now };
+            await redis.set(redisKey, JSON.stringify(payload), "EX", cacheTTL.GPS_CACHE);
+
+            // 2. MongoDB Initialization (LiveLocation)
+            await LiveLocation.findOneAndUpdate(
+                { tripId },
+                {
+                    busId,
+                    driverId,
+                    coordinates: { lat, lng },
+                    speed: 0,
+                    heading: 0,
+                    status: "ONLINE",
+                    lastUpdate: now,
+                    nextStopIndex: 0
+                },
+                { upsert: true, new: true }
+            );
+
+            // 3. Historical Initialization
+            await Tracking.create({
+                tripId,
+                lat,
+                lng,
+                speed: 0,
+                timestamp: now
+            });
+
+            logger.info(`[TRACKING] Initialized location for trip: ${tripId} at (${lat}, ${lng})`);
+        } catch (err) {
+            logger.error(`[TRACKING] Failed to initialize location: ${err.message}`);
+        }
+    }
+
     async clearTripCache(tripId) {
         const keys = [
             `trip:${tripId}:live`,

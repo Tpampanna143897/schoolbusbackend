@@ -269,6 +269,12 @@ router.post("/start-trip", auth, async (req, res, next) => {
         // 3. Cache Stops in Redis for fast Geofencing
         await trackingService.cacheRouteStops(trip._id, route.stops);
 
+        // 4. Initialize Location if coordinates provided
+        const { latitude, longitude } = req.body;
+        if (latitude && longitude) {
+            await trackingService.initializeTripLocation(trip._id, busId, driverId, latitude, longitude);
+        }
+
         logger.info(`[TRIP] Started: ${trip._id} for Bus: ${busId} on Route: ${targetRouteId}`);
         return response(res, true, "Trip started successfully", { tripId: trip._id });
 
