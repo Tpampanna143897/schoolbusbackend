@@ -314,7 +314,7 @@ router.post("/end-trip", auth, async (req, res, next) => {
         }
 
         const trip = await Trip.findByIdAndUpdate(tripId, {
-            status: "ENDED",
+            status: "COMPLETED",
             endedAt: new Date()
         }, { new: true });
 

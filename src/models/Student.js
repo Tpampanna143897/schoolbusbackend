@@ -9,6 +9,14 @@ const studentSchema = new mongoose.Schema(
             ref: "User",
             required: true
         },
+        schoolId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "School"
+        },
+        homeLocation: {
+            lat: Number,
+            lng: Number
+        },
         assignedRoute: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "Route"

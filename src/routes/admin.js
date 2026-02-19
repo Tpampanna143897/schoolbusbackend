@@ -11,6 +11,7 @@ const Bus = require("../models/Bus");
 const Student = require("../models/Student");
 const Tracking = require("../models/Tracking");
 const Trip = require("../models/Trip");
+const School = require("../models/School");
 const mongoose = require("mongoose");
 
 /**
@@ -141,10 +142,18 @@ router.put("/users/:id", auth, role("ADMIN"), async (req, res) => {
  */
 router.post("/buses", auth, role("ADMIN"), async (req, res) => {
     try {
-        const bus = await Bus.create(req.body);
+        const { busNumber, vin, capacity, defaultRoute, isActive } = req.body;
+        const bus = await Bus.create({
+            busNumber,
+            vin,
+            capacity,
+            defaultRoute: defaultRoute || null,
+            isActive: isActive !== undefined ? isActive : true
+        });
         return response(res, true, "Bus created successfully", bus, 201);
     } catch (err) {
-        return response(res, false, "Failed to create bus", {}, 500);
+        logger.error(`[ADMIN] CREATE BUS ERR: ${err.message}`);
+        return response(res, false, "Failed to create bus: " + err.message, {}, 500);
     }
 });
 
@@ -308,10 +317,45 @@ router.put("/students/:id/bus", auth, role("ADMIN"), async (req, res) => {
  */
 router.post("/routes", auth, role("ADMIN"), async (req, res) => {
     try {
-        const route = await Route.create(req.body);
+        const { routeName, routeCode, description, schools, startPoint, endPoint, stops, polyline, directions } = req.body;
+
+        // Validation: Unique routeCode
+        const existing = await Route.findOne({ routeCode });
+        if (existing) return response(res, false, "Route code already exists", {}, 400);
+
+        const route = await Route.create({
+            routeName,
+            routeCode,
+            description,
+            schools: schools || [],
+            startPoint,
+            endPoint,
+            stops: stops || [],
+            polyline,
+            directions: directions || { morning: true, evening: true }
+        });
         return response(res, true, "Route created successfully", route, 201);
     } catch (err) {
-        return response(res, false, "Failed to create route", {}, 500);
+        logger.error(`[ADMIN] CREATE ROUTE ERR: ${err.message}`);
+        return response(res, false, "Failed to create route: " + err.message, {}, 500);
+    }
+});
+
+router.get("/schools", auth, role("ADMIN", "STAFF"), async (req, res) => {
+    try {
+        const schools = await School.find().lean();
+        return response(res, true, "Schools fetched", schools);
+    } catch (err) {
+        return response(res, false, "Failed to fetch schools", {}, 500);
+    }
+});
+
+router.post("/schools", auth, role("ADMIN"), async (req, res) => {
+    try {
+        const school = await School.create(req.body);
+        return response(res, true, "School created", school, 201);
+    } catch (err) {
+        return response(res, false, "Failed to create school", {}, 500);
     }
 });
 
@@ -406,7 +450,7 @@ router.get("/live-trips", auth, role("ADMIN", "STAFF"), async (req, res) => {
 router.get("/trip-history", auth, role("ADMIN"), async (req, res) => {
     try {
         const { driverId, busId, routeId, startDate, endDate } = req.query;
-        let query = { status: "ENDED" };
+        let query = { status: "COMPLETED" };
 
         if (driverId) query.driverId = driverId;
         if (busId) query.busId = busId;
@@ -464,7 +508,7 @@ router.post("/buses/:id/reset", auth, role("ADMIN"), async (req, res) => {
 
         await Trip.updateMany(
             { busId: req.params.id, status: { $in: ["STARTED", "STOPPED"] } },
-            { status: "ENDED", endedAt: new Date() }
+            { status: "COMPLETED", endedAt: new Date() }
         );
 
         return response(res, true, "Bus reset successfully", bus);

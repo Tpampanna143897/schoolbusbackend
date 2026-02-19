@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const tripSchema = new mongoose.Schema(
     {
+        tripCode: { type: String },
         driverId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
@@ -24,19 +25,21 @@ const tripSchema = new mongoose.Schema(
         },
         status: {
             type: String,
-            enum: ["STARTED", "STOPPED", "ENDED"],
+            enum: ["SCHEDULED", "STARTED", "COMPLETED", "CANCELLED"],
             default: "STARTED"
         },
         startedAt: {
             type: Date,
             default: Date.now
         },
-        stoppedAt: {
-            type: Date
-        },
         endedAt: {
             type: Date
-        }
+        },
+        stopsVisited: [{
+            stopId: mongoose.Schema.Types.ObjectId,
+            arrivalTime: Date,
+            departureTime: Date
+        }]
     },
     { timestamps: true }
 );
