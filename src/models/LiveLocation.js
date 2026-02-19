@@ -12,7 +12,9 @@ const liveLocationSchema = new mongoose.Schema({
     heading: { type: Number, default: 0 },
     status: { type: String, enum: ["ONLINE", "OFFLINE"], default: "ONLINE" },
     lastUpdate: { type: Date, default: Date.now },
-    nextHistoryUpdate: { type: Date, default: Date.now }
+    nextHistoryUpdate: { type: Date, default: Date.now },
+    nextStopIndex: { type: Number, default: 0 },
+    eta: { type: Number, default: null } // in minutes
 }, { timestamps: true });
 
 liveLocationSchema.index({ tripId: 1 });

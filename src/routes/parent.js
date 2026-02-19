@@ -3,6 +3,41 @@ const auth = require("../middleware/auth");
 const Trip = require("../models/Trip");
 const Tracking = require("../models/Tracking");
 const Student = require("../models/Student");
+const progressionController = require("../controllers/progressionController");
+
+/**
+ * @swagger
+ * /parent/trip-progression/{tripId}:
+ *   get:
+ *     summary: Get progression (next stop, ETA) for a trip
+ *     tags: [Parent]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tripId
+ *         required: true
+ *         schema:
+ *           type: string
+ */
+router.get("/trip-progression/:tripId", auth, progressionController.getNextStop);
+
+/**
+ * @swagger
+ * /parent/remaining-stops/{tripId}:
+ *   get:
+ *     summary: Get remaining stops for an active trip
+ *     tags: [Parent]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tripId
+ *         required: true
+ *         schema:
+ *           type: string
+ */
+router.get("/remaining-stops/:tripId", auth, progressionController.getRemainingStops);
 
 /**
  * BACKEND HEALTH & ROUTE TEST

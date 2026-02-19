@@ -13,9 +13,17 @@ class TrackingService {
     /**
      * Cache route stops in Redis when trip starts
      */
+    /**
+     * Cache route stops in Redis when trip starts
+     */
     async cacheRouteStops(tripId, stops) {
         const key = `trip:${tripId}:stops`;
-        await redis.set(key, JSON.stringify(stops), "EX", cacheTTL.TRIP_CACHE);
+        const nextIndexKey = `trip:${tripId}:next_stop_index`;
+        await Promise.all([
+            redis.set(key, JSON.stringify(stops), "EX", cacheTTL.TRIP_CACHE),
+            redis.set(nextIndexKey, 0, "EX", cacheTTL.TRIP_CACHE) // Initialize with first stop
+        ]);
+        logger.info(`[REDIS] Cached ${stops.length} stops and initialized progression for trip: ${tripId}`);
     }
 
     /**
@@ -34,14 +42,17 @@ class TrackingService {
             // 2. Fetch cached stops and stop-states from Redis
             const stopsKey = `trip:${tripId}:stops`;
             const stateKey = `trip:${tripId}:state`;
+            const nextIndexKey = `trip:${tripId}:next_stop_index`;
 
-            const [stopsJson, stateJson] = await Promise.all([
+            const [stopsJson, stateJson, nextStopIndexStr] = await Promise.all([
                 redis.get(stopsKey),
-                redis.get(stateKey)
+                redis.get(stateKey),
+                redis.get(nextIndexKey)
             ]);
 
             const stops = stopsJson ? JSON.parse(stopsJson) : [];
             const previousState = stateJson ? JSON.parse(stateJson) : {};
+            let nextStopIndex = nextStopIndexStr !== null ? parseInt(nextStopIndexStr, 10) : 0;
 
             // 3. Perform Geofencing Check
             const geofenceResult = await geofenceService.checkStopStatus({ lat, lng }, stops, previousState);
@@ -53,6 +64,8 @@ class TrackingService {
                 for (const stop of geofenceResult.arrived) {
                     const stopId = stop._id.toString();
                     const date = moment(now).format("YYYY-MM-DD");
+                    const stopIndex = stops.findIndex(s => s._id.toString() === stopId);
+
                     const attendanceLockKey = `trip:${tripId}:stop:${stopId}:attendance:${date}`;
 
                     // a) Check Redis Lock to prevent duplicate marking
@@ -68,6 +81,18 @@ class TrackingService {
 
                         // c) Set Redis Lock (TTL 24h)
                         await redis.set(attendanceLockKey, "MARKED", "EX", 86400);
+
+                        // Update Progression: If this is the "next" stop or later, advance the index
+                        if (stopIndex >= nextStopIndex) {
+                            nextStopIndex = stopIndex + 1;
+                            await redis.set(nextIndexKey, nextStopIndex, "EX", cacheTTL.TRIP_CACHE);
+
+                            io.to(`trip-${tripId}`).emit("stopProgressed", {
+                                nextStopIndex,
+                                remainingStops: stops.length - nextStopIndex,
+                                lastVisitedStop: stop.name
+                            });
+                        }
 
                         // d) Mark Student Attendance
                         const trip = await Trip.findById(tripId);
@@ -120,7 +145,20 @@ class TrackingService {
                 }
             }
 
-            // 5. Upsert into MongoDB LiveLocation (Operational DB)
+            // 5. ETA Calculation (Simple distance-based)
+            let eta = null;
+            if (nextStopIndex < stops.length) {
+                const nextStop = stops[nextStopIndex];
+                const distance = geofenceService.getDistance(lat, lng, nextStop.lat, nextStop.lng);
+                // Rough estimate: distance (m) / speed (m/s). Avg speed 30km/h = 8.3m/s.
+                // Using 5m/s (18km/h) for cautious city traffic estimation.
+                const speedInMs = speed > 0 ? (speed * 1000) / 3600 : 5;
+                eta = Math.ceil(distance / speedInMs / 60); // minutes
+                payload.eta = eta;
+                payload.nextStop = nextStop.name;
+            }
+
+            // 6. Upsert into MongoDB LiveLocation (Operational DB)
             const liveDoc = await LiveLocation.findOneAndUpdate(
                 { tripId },
                 {
@@ -130,12 +168,15 @@ class TrackingService {
                     speed,
                     heading,
                     status: "ONLINE",
-                    lastUpdate: now
+                    lastUpdate: now,
+                    // Extension: store ETA/Progression in DB too for persistence
+                    nextStopIndex,
+                    eta
                 },
                 { upsert: true, new: true }
             );
 
-            // 6. Conditional Throttling: Save to history only every 30 seconds
+            // 7. Conditional Throttling: Save to history only every 30 seconds
             if (now >= liveDoc.nextHistoryUpdate) {
                 await Tracking.create({
                     tripId,
@@ -151,7 +192,7 @@ class TrackingService {
                 logger.debug(`[HISTORIC] Saved tracking point for trip: ${tripId}`);
             }
 
-            // 7. Emit live location to global listeners
+            // 8. Emit live location to global listeners
             io.to(`trip-${tripId}`).emit("busLocation", payload);
             io.to(`bus-${busId}`).emit("busLocation", payload);
             io.to("admin-room").emit("busLocation", payload);
@@ -163,7 +204,12 @@ class TrackingService {
     }
 
     async clearTripCache(tripId) {
-        const keys = [`trip:${tripId}:live`, `trip:${tripId}:stops`, `trip:${tripId}:state`];
+        const keys = [
+            `trip:${tripId}:live`,
+            `trip:${tripId}:stops`,
+            `trip:${tripId}:state`,
+            `trip:${tripId}:next_stop_index`
+        ];
         await redis.del(...keys);
         logger.info(`[REDIS] Cleared cache for trip: ${tripId}`);
     }
